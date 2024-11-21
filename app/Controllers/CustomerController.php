@@ -5,13 +5,22 @@ namespace App\Controllers;
 use App\Models\CustomerModel;
 use App\Models\RestaurantModel;
 use App\Models\MenuModel;
+use App\Models\FavoriteModel;
 use CodeIgniter\Controller;
 
 class CustomerController extends Controller
 {
+    protected $db;
+
+    public function __construct()
+    {
+        // Load the database connection
+        $this->db = \Config\Database::connect();
+    }
     public function dashboard()
     {
         // Check if customer is logged in
+        $customerId = session()->get('customer_id');
         
         if (!session()->has('customer_id')) {
             return redirect()->to('/customer/login');
@@ -22,9 +31,52 @@ class CustomerController extends Controller
 
         // Get all registered restaurants
         $restaurants = $restaurantModel->findAll();
+        $favoriteModel = new FavoriteModel();
+        $favoriteRestaurants = $favoriteModel->getFavoriteRestaurants($customerId);
+        // $db = db_connect();
+        // $favoriteRestaurants = $this->db->table('customer_favorites')
+        // ->select('restaurants.*')
+        // ->join('restaurants', 'restaurants.id = customer_favorites.restaurant_id')
+        // ->where('customer_favorites.customer_id', $customerId)
+        // ->get()
+        // ->getResultArray();
 
         // Pass the list of restaurants to the view
-        return view('customer/dashboard', ['restaurants' => $restaurants]);
+        // return view('customer/dashboard', ['restaurants' => $restaurants]);
+        return view('customer/dashboard', [
+            'restaurants' => $restaurants,
+            'favoriteRestaurants' => $favoriteRestaurants
+        ]);
+    }
+    public function addFavorite($restaurantId) {
+        $customerId = session()->get('customer_id');
+        $favoriteModel = new FavoriteModel();
+
+        if (!$favoriteModel->isFavorite($customerId, $restaurantId)) {
+            $favoriteModel->addFavorite($customerId, $restaurantId);
+        }
+
+        // return redirect()->back()->with('message', 'Restaurant added to favorites!');
+        return $this->response->setJSON(['message' => 'Restaurant added to favorites']);
+    }
+
+    public function removeFavorite($restaurantId) {
+        $customerId = session()->get('customer_id');
+        $favoriteModel = new FavoriteModel();
+
+        $favoriteModel->removeFavorite($customerId, $restaurantId);
+
+        // return redirect()->back()->with('message', 'Restaurant removed from favorites!');
+        return $this->response->setJSON(['message' => 'Restaurant removed from favorites']);
+    }
+
+    public function getFavorites() {
+        $customerId = session()->get('customer_id');
+        $favoriteModel = new FavoriteModel();
+
+        $data['favorites'] = $favoriteModel->getFavorites($customerId);
+
+        return view('favorites_view', $data);
     }
 
     public function login()

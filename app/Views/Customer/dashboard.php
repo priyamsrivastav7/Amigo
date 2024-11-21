@@ -6,6 +6,10 @@
     <title>Customer Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <style>
+        /* Existing CSS styles */
+        /* ... */
+
+        /* New styles for the Favorite button */
         * {
             margin: 0;
             padding: 0;
@@ -209,6 +213,101 @@
             0% { background-position: -1000px 0; }
             100% { background-position: 1000px 0; }
         }
+
+        .range-slider {
+            width: 100%;
+            margin-bottom: 2rem;
+        }
+
+        .range-slider__range {
+            -webkit-appearance: none;
+            width: 10%;
+            height: 10px;
+            border-radius: 5px;
+            background: #d7dcdf;
+            outline: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .range-slider__range::-webkit-slider-thumb {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #ff6b6b;
+            cursor: pointer;
+            -webkit-transition: background 0.15s ease-in-out;
+            transition: background 0.15s ease-in-out;
+        }
+
+        .range-slider__range::-webkit-slider-thumb:hover {
+            background: #ffd93d;
+        }
+
+        .range-slider__range:active::-webkit-slider-thumb {
+            background: #ffd93d;
+        }
+
+        .range-slider__value {
+            display: inline-block;
+            width: 60px;
+            color: #ff6b6b;
+            line-height: 20px;
+            text-align: center;
+            border-radius: 3px;
+            background: #d7dcdf;
+            padding: 5px 5px;
+            margin-left: 8px;
+        }
+
+        .range-slider__value:after {
+            position: absolute;
+            top: 8px;
+            left: -7px;
+            width: 0;
+            height: 0;
+            border-top: 7px solid transparent;
+            border-right: 7px solid #d7dcdf;
+            border-bottom: 7px solid transparent;
+            content: "";
+        }
+        .favorite-button {
+            display: block;
+            margin: 1.5rem;
+            padding: 1rem;
+            background: linear-gradient(45deg, #ff6b6b, #ffd93d);
+            color: white;
+            text-decoration: none;
+            text-align: center;
+            border-radius: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .favorite-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: 0.5s;
+        }
+
+        .favorite-button:hover::before {
+            left: 100%;
+        }
+
+        .favorite-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -216,31 +315,161 @@
         <h2>Welcome, <?= session()->get('customer_name'); ?>!</h2>
         <h3>Explore Our Partner Restaurants</h3>
 
-        <?php if(!empty($restaurants)): ?>
-            <div class="restaurant-list">
-                <?php foreach($restaurants as $restaurant): ?>
-                    <div class="restaurant-item">
+        <div class="range-slider">
+            <input type="range" min="1" max="20" value="1" class="range-slider__range" id="range-slider">
+            <span class="range-slider__value" id="range-value">1 km</span>
+        </div>
+        <h3>All Restaurants</h3>
+        <div class="restaurant-list">
+            <?php if (!empty($favoriteRestaurants)): ?>
+                <?php foreach ($favoriteRestaurants as $restaurant): ?>
+                    <div class="restaurant-item" data-latitude="<?= $restaurant['latitude']; ?>" data-longitude="<?= $restaurant['longitude']; ?>" data-id="<?= $restaurant['id']; ?>">
                         <img src="<?= base_url('/' . $restaurant['image']); ?>" alt="<?= $restaurant['name']; ?>" class="restaurant-image">
                         <h4><?= $restaurant['name']; ?></h4>
                         <p><strong>Email:</strong> <?= $restaurant['email']; ?></p>
                         <p><strong>Phone:</strong> <?= $restaurant['phone_number']; ?></p>
                         <p><strong>Address:</strong> <?= $restaurant['address']; ?></p>
                         <a href="/customer/menu/<?= $restaurant['id']; ?>" class="view-menu-button">View Menu</a>
+                        <button class="heart-button favorited" data-id="<?= $restaurant['id']; ?>">♥</button>
                     </div>
                 <?php endforeach; ?>
-            </div>
-        <?php else: ?>
-            <div class="empty-state">
-                <p>No restaurants available at the moment. Please check back later!</p>
-                <p>🍽️</p>
-            </div>
-        <?php endif; ?>
+            <?php else: ?>
+                <div class="empty-state">
+                    <p>No favorite restaurants added yet. Browse and add some!</p>
+                </div>
+            <?php endif; ?>
+        </div>
 
+        <div class="restaurant-list" id="restaurant-list">
+            <?php foreach($restaurants as $restaurant): ?>
+                <div class="restaurant-item" data-latitude="<?= $restaurant['latitude']; ?>" data-longitude="<?= $restaurant['longitude']; ?>" data-id="<?= $restaurant['id']; ?>">
+                    <img src="<?= base_url('/' . $restaurant['image']); ?>" alt="<?= $restaurant['name']; ?>" class="restaurant-image">
+                    <h4><?= $restaurant['name']; ?></h4>
+                    <p><strong>Email:</strong> <?= $restaurant['email']; ?></p>
+                    <p><strong>Phone:</strong> <?= $restaurant['phone_number']; ?></p>
+                    <p><strong>Address:</strong> <?= $restaurant['address']; ?></p>
+                    <a href="/customer/menu/<?= $restaurant['id']; ?>" class="view-menu-button">View Menu</a>
+                    <button class="heart-button" data-id="<?= $restaurant['id']; ?>">♥</button>
+                </div>
+            <?php endforeach; ?>
+        </div>
+
+        
         <div class="logout-container">
             <form action="/customer/logout" method="get">
                 <button type="submit" class="logout-button">Logout</button>
             </form>
         </div>
     </div>
+
+    <script>
+        const rangeSlider = document.getElementById('range-slider');
+        const rangeValue = document.getElementById('range-value');
+
+        // Get the customer's location
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const customerLatitude = position.coords.latitude;
+                const customerLongitude = position.coords.longitude;
+
+                // Update the restaurant list based on the selected range
+                updateRestaurantList(customerLatitude, customerLongitude, rangeSlider.value);
+
+                // Add event listener to the range slider
+                rangeSlider.addEventListener('input', () => {
+                    const range = rangeSlider.value;
+                    rangeValue.textContent = `${range} km`;
+                    updateRestaurantList(customerLatitude, customerLongitude, range);
+                });
+            },
+            (error) => {
+                console.error('Error getting customer location:', error);
+            }
+        );
+
+        function updateRestaurantList(customerLatitude, customerLongitude, range) {
+            const restaurantItems = document.querySelectorAll('.restaurant-item');
+            restaurantItems.forEach((item) => {
+                const restaurantLatitude = parseFloat(item.dataset.latitude);
+                const restaurantLongitude = parseFloat(item.dataset.longitude);
+                const distance = calculateDistance(customerLatitude, customerLongitude, restaurantLatitude, restaurantLongitude);
+                if (distance <= range) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Radius of the earth in km
+            const dLat = ((lat2 - lat1) * Math.PI) / 180;
+            const dLon = ((lon2 - lon1) * Math.PI) / 180;
+            const a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos((lat1 * Math.PI) / 180) *
+                Math.cos((lat2 * Math.PI) / 180) *
+                Math.sin(dLon / 2) *
+                Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c; // Distance in km
+        }
+        const favoriteButtons = document.querySelectorAll('.favorite-button');
+        favoriteButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                const restaurantItem = button.closest('.restaurant-item');
+                const restaurantId = parseInt(restaurantItem.querySelector('a').getAttribute('href').split('/').pop());
+                // Implement your favorite restaurant logic here
+                console.log(`Favoriting restaurant with ID: ${restaurantId}`);
+            });
+        });
+        const heartButtons = document.querySelectorAll('.heart-button');
+        const favoriteRestaurants = new Set(<?= json_encode(array_column($favoriteRestaurants, 'id')) ?>);
+
+        heartButtons.forEach((button) => {
+            const restaurantId = parseInt(button.dataset.id);
+            if (favoriteRestaurants.has(restaurantId)) {
+                button.classList.add('favorited');
+            }
+
+            button.addEventListener('click', () => {
+                toggleFavorite(restaurantId, button);
+            });
+        });
+
+        function toggleFavorite(restaurantId, button) {
+            if (button.classList.contains('favorited')) {
+                // Unfavorite the restaurant
+                fetch('/customer/remove-favorite/' + restaurantId, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    button.classList.remove('favorited');
+                    console.log('Restaurant removed from favorites');
+                })
+                .catch(error => {
+                    console.error('Error removing favorite:', error);
+                });
+            } else {
+                // Favorite the restaurant
+                fetch('/customer/add-favorite/' + restaurantId, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    button.classList.add('favorited');
+                    console.log('Restaurant added to favorites');
+                })
+                .catch(error => {
+                    console.error('Error adding favorite:', error);
+                });
+            }
+        }
+    </script>
 </body>
 </html>
