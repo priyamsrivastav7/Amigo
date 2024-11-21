@@ -271,43 +271,14 @@
             border-bottom: 7px solid transparent;
             content: "";
         }
-        .favorite-button {
-            display: block;
-            margin: 1.5rem;
-            padding: 1rem;
-            background: linear-gradient(45deg, #ff6b6b, #ffd93d);
-            color: white;
-            text-decoration: none;
-            text-align: center;
-            border-radius: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            cursor: pointer;
-        }
+        .heart-button {
+    color: gray;
+    cursor: pointer;
+}
+.heart-button.favorited {
+    color: red;
+}
 
-        .favorite-button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-            transition: 0.5s;
-        }
-
-        .favorite-button:hover::before {
-            left: 100%;
-        }
-
-        .favorite-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
-        }
     </style>
 </head>
 <body>
@@ -319,26 +290,28 @@
             <input type="range" min="1" max="20" value="1" class="range-slider__range" id="range-slider">
             <span class="range-slider__value" id="range-value">1 km</span>
         </div>
-        <h3>All Restaurants</h3>
-        <div class="restaurant-list">
-            <?php if (!empty($favoriteRestaurants)): ?>
-                <?php foreach ($favoriteRestaurants as $restaurant): ?>
-                    <div class="restaurant-item" data-latitude="<?= $restaurant['latitude']; ?>" data-longitude="<?= $restaurant['longitude']; ?>" data-id="<?= $restaurant['id']; ?>">
-                        <img src="<?= base_url('/' . $restaurant['image']); ?>" alt="<?= $restaurant['name']; ?>" class="restaurant-image">
-                        <h4><?= $restaurant['name']; ?></h4>
-                        <p><strong>Email:</strong> <?= $restaurant['email']; ?></p>
-                        <p><strong>Phone:</strong> <?= $restaurant['phone_number']; ?></p>
-                        <p><strong>Address:</strong> <?= $restaurant['address']; ?></p>
-                        <a href="/customer/menu/<?= $restaurant['id']; ?>" class="view-menu-button">View Menu</a>
-                        <button class="heart-button favorited" data-id="<?= $restaurant['id']; ?>">♥</button>
-                    </div>
+        
+        <?php if (!empty($favorites)): ?>
+            <h2>Your Favorites</h2>
+            <ul>
+                <?php foreach ($favorites as $restaurant): ?>
+                    <li>
+                        <? #esc($restaurant['name']); ?>
+                        <!-- Toggle Favorite Button -->
+                        <form action="<?= site_url('customer/toggleFavorite/' . $restaurant['id']); ?>" method="post" style="display:inline;">
+                            <button type="submit" class="btn btn-danger">Remove from Favorites</button>
+                        </form>
+                    </li>
                 <?php endforeach; ?>
-            <?php else: ?>
-                <div class="empty-state">
-                    <p>No favorite restaurants added yet. Browse and add some!</p>
-                </div>
-            <?php endif; ?>
-        </div>
+            </ul>
+        <?php else: ?>
+            
+        <?php endif; ?>
+
+
+
+        <h3>All Restaurants</h3>
+        
 
         <div class="restaurant-list" id="restaurant-list">
             <?php foreach($restaurants as $restaurant): ?>
@@ -349,8 +322,14 @@
                     <p><strong>Phone:</strong> <?= $restaurant['phone_number']; ?></p>
                     <p><strong>Address:</strong> <?= $restaurant['address']; ?></p>
                     <a href="/customer/menu/<?= $restaurant['id']; ?>" class="view-menu-button">View Menu</a>
-                    <button class="heart-button" data-id="<?= $restaurant['id']; ?>">♥</button>
+                    <form action="/customer/toggleFavorite/<?= $restaurant['id']; ?>" method="POST">
+                        <button type="submit" class="heart-button <?= in_array($restaurant['id'], array_column($favorites, 'restaurant_id')) ? 'favorited' : ''; ?>">
+                            ♥
+                        </button>
+                    </form>
                 </div>
+                
+
             <?php endforeach; ?>
         </div>
 
@@ -413,63 +392,33 @@
                 Math.sin(dLon / 2);
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
             return R * c; // Distance in km
-        }
-        const favoriteButtons = document.querySelectorAll('.favorite-button');
-        favoriteButtons.forEach((button) => {
-            button.addEventListener('click', () => {
-                const restaurantItem = button.closest('.restaurant-item');
-                const restaurantId = parseInt(restaurantItem.querySelector('a').getAttribute('href').split('/').pop());
-                // Implement your favorite restaurant logic here
-                console.log(`Favoriting restaurant with ID: ${restaurantId}`);
-            });
-        });
-        const heartButtons = document.querySelectorAll('.heart-button');
-        const favoriteRestaurants = new Set(<?= json_encode(array_column($favoriteRestaurants, 'id')) ?>);
+        }   
+        document.querySelectorAll('.heart-button').forEach(button => {
+    button.addEventListener('click', () => {
+        const restaurantId = button.dataset.id;
 
-        heartButtons.forEach((button) => {
-            const restaurantId = parseInt(button.dataset.id);
-            if (favoriteRestaurants.has(restaurantId)) {
-                button.classList.add('favorited');
+        fetch('/customer/toggleFavorite', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ restaurant_id: restaurantId }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'added') {
+                button.classList.add('favorited'); // Highlight as favorited
+            } else if (data.status === 'removed') {
+                button.classList.remove('favorited'); // Unhighlight
             }
+            console.log(data)
+        })
+        .catch(error => console.error('Error:', error));
+    });
+});
 
-            button.addEventListener('click', () => {
-                toggleFavorite(restaurantId, button);
-            });
-        });
 
-        function toggleFavorite(restaurantId, button) {
-            if (button.classList.contains('favorited')) {
-                // Unfavorite the restaurant
-                fetch('/customer/remove-favorite/' + restaurantId, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => {
-                    button.classList.remove('favorited');
-                    console.log('Restaurant removed from favorites');
-                })
-                .catch(error => {
-                    console.error('Error removing favorite:', error);
-                });
-            } else {
-                // Favorite the restaurant
-                fetch('/customer/add-favorite/' + restaurantId, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => {
-                    button.classList.add('favorited');
-                    console.log('Restaurant added to favorites');
-                })
-                .catch(error => {
-                    console.error('Error adding favorite:', error);
-                });
-            }
-        }
+
     </script>
 </body>
 </html>

@@ -5,7 +5,7 @@ namespace App\Controllers;
 use App\Models\CustomerModel;
 use App\Models\RestaurantModel;
 use App\Models\MenuModel;
-use App\Models\FavoriteModel;
+use App\Models\FavoritesModel;
 use CodeIgniter\Controller;
 
 class CustomerController extends Controller
@@ -16,139 +16,144 @@ class CustomerController extends Controller
     {
         // Load the database connection
         $this->db = \Config\Database::connect();
+        $this->restaurantModel = new RestaurantModel();
+        $this->favoriteModel = new FavoritesModel();
     }
+
+    // Customer Dashboard
     public function dashboard()
     {
-        // Check if customer is logged in
+        // Ensure the customer is logged in
         $customerId = session()->get('customer_id');
-        
-        if (!session()->has('customer_id')) {
+        if (!$customerId) {
             return redirect()->to('/customer/login');
         }
 
-        // Instantiate the Restaurant model
+        // Fetch restaurants and favorite restaurants
         $restaurantModel = new RestaurantModel();
-
-        // Get all registered restaurants
         $restaurants = $restaurantModel->findAll();
-        $favoriteModel = new FavoriteModel();
-        $favoriteRestaurants = $favoriteModel->getFavoriteRestaurants($customerId);
-        // $db = db_connect();
-        // $favoriteRestaurants = $this->db->table('customer_favorites')
-        // ->select('restaurants.*')
-        // ->join('restaurants', 'restaurants.id = customer_favorites.restaurant_id')
-        // ->where('customer_favorites.customer_id', $customerId)
-        // ->get()
-        // ->getResultArray();
 
-        // Pass the list of restaurants to the view
-        // return view('customer/dashboard', ['restaurants' => $restaurants]);
+        $favoriteModel = new FavoritesModel();
+        $favorites = $favoriteModel->getFavoritesByCustomer(session()->get('customer_id'));
+
         return view('customer/dashboard', [
             'restaurants' => $restaurants,
-            'favoriteRestaurants' => $favoriteRestaurants
+            'favorites' => $favorites
         ]);
     }
-    public function addFavorite($restaurantId) {
-        $customerId = session()->get('customer_id');
-        $favoriteModel = new FavoriteModel();
+    
 
-        if (!$favoriteModel->isFavorite($customerId, $restaurantId)) {
-            $favoriteModel->addFavorite($customerId, $restaurantId);
+    public function favoriteRestaurants() {
+        $customerId = session()->get('customer_id');
+        $favoritesModel = new \App\Models\FavoritesModel();
+    
+        // Get favorite restaurant IDs
+        $favoriteIds = $favoritesModel
+            ->where('customer_id', $customerId)
+            ->findColumn('restaurant_id');
+    
+        if ($favoriteIds) {
+            $restaurantModel = new \App\Models\RestaurantModel();
+            $favorites = $restaurantModel
+                ->whereIn('id', $favoriteIds)
+                ->findAll();
+        } else {
+            $favorites = [];
         }
-
-        // return redirect()->back()->with('message', 'Restaurant added to favorites!');
-        return $this->response->setJSON(['message' => 'Restaurant added to favorites']);
+    
+        return view('customer_dashboard', ['favorites' => $favorites]);
     }
 
-    public function removeFavorite($restaurantId) {
-        $customerId = session()->get('customer_id');
-        $favoriteModel = new FavoriteModel();
+    public function toggleFavorite($restaurant_id)
+{
+    $customer_id = session()->get('customer_id'); // Assuming customer session is set
 
-        $favoriteModel->removeFavorite($customerId, $restaurantId);
-
-        // return redirect()->back()->with('message', 'Restaurant removed from favorites!');
-        return $this->response->setJSON(['message' => 'Restaurant removed from favorites']);
+    // Check if the restaurant exists
+    $restaurant = $this->restaurantModel->find($restaurant_id);
+    
+    if (!$restaurant) {
+        // Handle the case where the restaurant does not exist
+        return redirect()->back()->with('error', 'Restaurant not found.');
     }
 
-    public function getFavorites() {
-        $customerId = session()->get('customer_id');
-        $favoriteModel = new FavoriteModel();
-
-        $data['favorites'] = $favoriteModel->getFavorites($customerId);
-
-        return view('favorites_view', $data);
+    // Check if the restaurant is already in favorites
+    $favorite = $this->favoriteModel->where('customer_id', $customer_id)
+                                    ->where('restaurant_id', $restaurant_id)
+                                    ->first();
+    
+    if ($favorite) {
+        // Remove from favorites
+        $this->favoriteModel->delete($favorite['id']);
+        return redirect()->back()->with('success', 'Removed from favorites.');
+    } else {
+        // Add to favorites
+        $this->favoriteModel->save([
+            'customer_id' => $customer_id,
+            'restaurant_id' => $restaurant_id,
+        ]);
+        return redirect()->back()->with('success', 'Added to favorites.');
     }
+}
 
+    
+    
+
+    
+
+    // Customer Login
     public function login()
     {
-        
         $session = session();
-        if($session ->get('customer_id') ){
+        if ($session->get('customer_id')) {
             return redirect()->to('customer/dashboard');
         }
         return view('customer/login');
     }
 
+    // Handle Customer Login
     public function loginUser()
     {
         $email = $this->request->getPost('email');
         $password = $this->request->getPost('password');
 
         $model = new CustomerModel();
-        
         $customer = $model->verifyLogin($email, $password);
-        
 
         if ($customer) {
-            // Login successful
             session()->set('customer_id', $customer['id']);
-            
-            return redirect()->to('customer/dashboard');  // Redirect to the customer dashboard
+            return redirect()->to('customer/dashboard');
         } else {
-            // Invalid credentials
             session()->setFlashdata('error', 'Invalid email or password.');
             return redirect()->to('/customer/login');
         }
     }
 
+    // Customer Registration
     public function register()
     {
         return view('customer/register');
     }
 
-    // Handle registration form submission
     public function registerSubmit()
     {
-        // Get form data
-        $name = $this->request->getPost('name');
-        $email = $this->request->getPost('email');
-        $phone_number = $this->request->getPost('phone_number');
-        $password = $this->request->getPost('password');
-        
-        // Validation rules
-        $validation =  \Config\Services::validation();
+        $validation = \Config\Services::validation();
         $validation->setRules([
             'email' => 'required|valid_email|is_unique[register_customer.email]',
             'password' => 'required|min_length[6]',
         ]);
 
-        // Check if validation passes
         if (!$validation->withRequest($this->request)->run()) {
             return redirect()->back()->withInput()->with('error', $validation->listErrors());
         }
 
-        // Prepare customer data
         $customerData = [
-            'name' => $name,
-            'email' => $email,
-            'phone_number' => $phone_number,
-            'password' => md5($password), // Ensure password is encrypted
+            'name' => $this->request->getPost('name'),
+            'email' => $this->request->getPost('email'),
+            'phone_number' => $this->request->getPost('phone_number'),
+            'password' => md5($this->request->getPost('password')), // Encrypt password
         ];
 
-        // Instantiate the CustomerModel
         $model = new CustomerModel();
-
-        // Save customer to the database
         if ($model->registerCustomer($customerData)) {
             session()->setFlashdata('success', 'Registration successful! Please login.');
             return redirect()->to('/customer/login');
@@ -157,44 +162,38 @@ class CustomerController extends Controller
             return redirect()->to('/customer/register');
         }
     }
+
+    // Logout
     public function logout()
     {
-        
-        session()->destroy();  
+        session()->destroy();
         return redirect()->to('customer/login');
     }
 
-    public function menu($restaurantId =null )
-{
+    // Display Restaurant Menu
+    public function menu($restaurantId = null)
+    {
+        if (!session()->has('customer_id')) {
+            return redirect()->to('/customer/login');
+        }
 
-    if (!session()->has('customer_id')) {
-        return redirect()->to('/customer/login');
+        if (!$restaurantId) {
+            return redirect()->to('/customer/dashboard');
+        }
+
+        $restaurantModel = new RestaurantModel();
+        $menuModel = new MenuModel();
+
+        $restaurant = $restaurantModel->find($restaurantId);
+        if (!$restaurant) {
+            return redirect()->to('/customer/dashboard');
+        }
+
+        $menuItems = $menuModel->getMenuItemsByRestaurant($restaurantId, ['status' => 'enabled']);
+
+        return view('restaurant/menu', [
+            'restaurant' => $restaurant,
+            'menuItems' => $menuItems,
+        ]);
     }
-    // $restaurantId = session()->get('restaurant_id');
-    if (!$restaurantId) {
-        return redirect()->to('/customer/dashboard'.$restaurantId);
-    }
-
-    // Load the restaurant model and menu model
-    $restaurantModel = new RestaurantModel();
-    $menuModel = new MenuModel();
-
-    // Verify restaurant exists
-    $restaurant = $restaurantModel->find($restaurantId);
-    if (!$restaurant) {
-        return redirect()->to('/customer/dashboard');
-    }
-
-    // Fetch all enabled menu items for this restaurant
-    $menuItems = $menuModel->getMenuItemsByRestaurant($restaurantId, ['status' => 'enabled']);
-
-    // Pass data to the view
-    $data = [
-        'restaurant' => $restaurant,
-        'menuItems' => $menuItems
-        
-    ];
-
-    return view('restaurant/menu', $data);
-}
 }

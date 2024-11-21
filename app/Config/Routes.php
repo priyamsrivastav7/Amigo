@@ -34,6 +34,8 @@ $routes->post('restaurant/deleteMenuItem/(:num)', 'RestaurantDashboard::deleteMe
 $routes->post('/restaurant/toggleStatus/(:num)', 'RestaurantDashboard::toggleStatus/$1');
 
 
+$routes->post('customer/toggleFavorite/(:num)', 'CustomerController::toggleFavorite/$1');
+
 
 
 
