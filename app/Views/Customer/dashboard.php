@@ -296,7 +296,7 @@
             <ul>
                 <?php foreach ($favorites as $restaurant): ?>
                     <li>
-                        <? #esc($restaurant['name']); ?>
+                        <!-- <? #esc($restaurant['name']); ?> -->
                         <!-- Toggle Favorite Button -->
                         <form action="<?= site_url('customer/toggleFavorite/' . $restaurant['id']); ?>" method="post" style="display:inline;">
                             <button type="submit" class="btn btn-danger">Remove from Favorites</button>
