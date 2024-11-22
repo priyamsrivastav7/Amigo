@@ -11,6 +11,8 @@ use CodeIgniter\Controller;
 class CustomerController extends Controller
 {
     protected $db;
+    protected $favoriteModel;
+    protected $restaurantModel;
 
     public function __construct()
     {
@@ -33,12 +35,15 @@ class CustomerController extends Controller
         $restaurantModel = new RestaurantModel();
         $restaurants = $restaurantModel->findAll();
 
-        $favoriteModel = new FavoritesModel();
-        $favorites = $favoriteModel->getFavoritesByCustomer(session()->get('customer_id'));
+        // $favoriteModel = new FavoritesModel();
+        // $favorites = $favoriteModel->getFavoritesByCustomer(session()->get('customer_id'));
+        $favorites = $this->favoriteModel->getFavoritesByCustomer($customerId);
+        $favoriteIds = array_column($favorites, 'restaurant_id');
 
         return view('customer/dashboard', [
             'restaurants' => $restaurants,
-            'favorites' => $favorites
+            'favorites' => $favorites,
+            'favoriteIds' => $favoriteIds
         ]);
     }
     
@@ -64,35 +69,81 @@ class CustomerController extends Controller
         return view('customer_dashboard', ['favorites' => $favorites]);
     }
 
-    public function toggleFavorite($restaurant_id)
+    public function toggleFavorite($restaurantId = null)
+    {
+        $customerId = session()->get('customer_id');
+        // echo $restaurantId;
+        // die;
+
+        // Handle AJAX request
+        if ($this->request->isAJAX()) {
+            $result = $this->favoriteModel->toggleFavorite($customerId, $restaurantId);
+            
+            // Get updated favorites for response
+            $favorites = $this->favoriteModel->getFavoritesByCustomer($customerId);
+            
+            return $this->response->setJSON([
+                'status' => $result['status'],
+                'favorites' => $favorites
+            ]);
+        }
+
+        // Handle regular form submission
+        $result = $this->favoriteModel->toggleFavorite($customerId, $restaurantId);
+        $message = $result['status'] === 'added' ? 'Added to favorites.' : 'Removed from favorites.';
+        
+        return redirect()->back()->with('message', $message);
+    }
+    public function getFavorites()
+    {
+        $customerId = session()->get('customer_id');
+        $favorites = $this->favoriteModel->getFavoritesByCustomer($customerId);
+        
+        if ($this->request->isAJAX()) {
+            return $this->response->setJSON(['favorites' => $favorites]);
+        }
+        
+        return view('favorites', ['favorites' => $favorites]);
+    }
+// public function toggleFavorite($restaurantId = null)
+// {
+//     // If this is an AJAX request
+//     if ($this->request->isAJAX()) {
+//         // Your existing favorite toggle logic
+//         $result = $this->favoriteModel->toggleFavorite(
+//             session()->get('customer_id'), 
+//             $restaurantId
+//         );
+
+//         // Prepare response
+//         $response = [
+//             'status' => $result ? 'added' : 'removed'
+//         ];
+
+//         // Optionally, if you want to update favorites section dynamically
+//         if ($result) {
+//             $favorites = $this->favoriteModel->getCustomerFavorites(session()->get('customer_id'));
+//             $response['favorites_html'] = $this->generateFavoritesHtml($favorites);
+//         }
+
+//         return $this->response->setJSON($response);
+//     }
+
+//     // Fallback to traditional form submission if not AJAX
+//     return redirect()->back();
+// }
+
+// Helper method to generate favorites HTML (optional)
+private function generateFavoritesHtml($favorites)
 {
-    $customer_id = session()->get('customer_id'); // Assuming customer session is set
-
-    // Check if the restaurant exists
-    $restaurant = $this->restaurantModel->find($restaurant_id);
-    
-    if (!$restaurant) {
-        // Handle the case where the restaurant does not exist
-        return redirect()->back()->with('error', 'Restaurant not found.');
+    $html = '';
+    foreach ($favorites as $restaurant) {
+        $html .= '<li>' . 
+            $restaurant['name'] . 
+            ' <button class="remove-favorite" data-id="' . $restaurant['id'] . '">Remove</button>' . 
+            '</li>';
     }
-
-    // Check if the restaurant is already in favorites
-    $favorite = $this->favoriteModel->where('customer_id', $customer_id)
-                                    ->where('restaurant_id', $restaurant_id)
-                                    ->first();
-    
-    if ($favorite) {
-        // Remove from favorites
-        $this->favoriteModel->delete($favorite['id']);
-        return redirect()->back()->with('success', 'Removed from favorites.');
-    } else {
-        // Add to favorites
-        $this->favoriteModel->save([
-            'customer_id' => $customer_id,
-            'restaurant_id' => $restaurant_id,
-        ]);
-        return redirect()->back()->with('success', 'Added to favorites.');
-    }
+    return $html;
 }
 
     

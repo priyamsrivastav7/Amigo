@@ -272,13 +272,39 @@
             content: "";
         }
         .heart-button {
-    color: gray;
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
     cursor: pointer;
-}
-.heart-button.favorited {
-    color: red;
+    color: #ccc;
+    transition: transform 0.2s ease;
+    padding: 0.5rem;
+    z-index: 10;
 }
 
+.heart-button.favorited {
+    color: #ff4646;
+}
+
+.heart-button:hover {
+    transform: scale(1.2);
+}
+
+.restaurant-item {
+    position: relative;
+}
+
+.favorites-section {
+    margin: 2rem 0;
+}
+
+.favorites-section h2 {
+    color: #ff4646;
+    margin-bottom: 1rem;
+}
     </style>
 </head>
 <body>
@@ -290,23 +316,25 @@
             <input type="range" min="1" max="20" value="1" class="range-slider__range" id="range-slider">
             <span class="range-slider__value" id="range-value">1 km</span>
         </div>
+        <div id="favorites-container" class="favorites-section">
         
         <?php if (!empty($favorites)): ?>
             <h2>Your Favorites</h2>
-            <ul>
+            <div class="restaurant-list">
                 <?php foreach ($favorites as $restaurant): ?>
-                    <li>
-                        <!-- <? #esc($restaurant['name']); ?> -->
-                        <!-- Toggle Favorite Button -->
-                        <form action="<?= site_url('customer/toggleFavorite/' . $restaurant['id']); ?>" method="post" style="display:inline;">
-                            <button type="submit" class="btn btn-danger">Remove from Favorites</button>
-                        </form>
-                    </li>
+                    <div class="restaurant-item">
+                        <img src="<?= base_url('/' . $restaurant['image']); ?>" alt="<?= $restaurant['name']; ?>" class="restaurant-image">
+                        <h4><?= $restaurant['name']; ?></h4>
+                        <p><strong>Email:</strong> <?= $restaurant['email']; ?></p>
+                        <p><strong>Phone:</strong> <?= $restaurant['phone_number']; ?></p>
+                        <p><strong>Address:</strong> <?= $restaurant['address']; ?></p>
+                        <a href="/customer/menu/<?= $restaurant['id']; ?>" class="view-menu-button">View Menu</a>
+                        <button type="button" class="heart-button favorited" data-id="<?= $restaurant['id']; ?>">♥</button>
+                    </div>
                 <?php endforeach; ?>
-            </ul>
-        <?php else: ?>
-            
+            </div>
         <?php endif; ?>
+    </div>
 
 
 
@@ -314,24 +342,25 @@
         
 
         <div class="restaurant-list" id="restaurant-list">
-            <?php foreach($restaurants as $restaurant): ?>
-                <div class="restaurant-item" data-latitude="<?= $restaurant['latitude']; ?>" data-longitude="<?= $restaurant['longitude']; ?>" data-id="<?= $restaurant['id']; ?>">
-                    <img src="<?= base_url('/' . $restaurant['image']); ?>" alt="<?= $restaurant['name']; ?>" class="restaurant-image">
-                    <h4><?= $restaurant['name']; ?></h4>
-                    <p><strong>Email:</strong> <?= $restaurant['email']; ?></p>
-                    <p><strong>Phone:</strong> <?= $restaurant['phone_number']; ?></p>
-                    <p><strong>Address:</strong> <?= $restaurant['address']; ?></p>
-                    <a href="/customer/menu/<?= $restaurant['id']; ?>" class="view-menu-button">View Menu</a>
-                    <form action="/customer/toggleFavorite/<?= $restaurant['id']; ?>" method="POST">
-                        <button type="submit" class="heart-button <?= in_array($restaurant['id'], array_column($favorites, 'restaurant_id')) ? 'favorited' : ''; ?>">
-                            ♥
-                        </button>
-                    </form>
-                </div>
-                
-
-            <?php endforeach; ?>
-        </div>
+        <?php foreach($restaurants as $restaurant): ?>
+            <div class="restaurant-item" 
+                data-latitude="<?= $restaurant['latitude']; ?>" 
+                data-longitude="<?= $restaurant['longitude']; ?>" 
+                data-id="<?= $restaurant['id']; ?>">
+                <img src="<?= base_url('/' . $restaurant['image']); ?>" alt="<?= $restaurant['name']; ?>" class="restaurant-image">
+                <h4><?= $restaurant['name']; ?></h4>
+                <p><strong>Email:</strong> <?= $restaurant['email']; ?></p>
+                <p><strong>Phone:</strong> <?= $restaurant['phone_number']; ?></p>
+                <p><strong>Address:</strong> <?= $restaurant['address']; ?></p>
+                <a href="/customer/menu/<?= $restaurant['id']; ?>" class="view-menu-button">View Menu</a>
+                <button type="button" 
+                    class="heart-button <?= in_array($restaurant['id'], array_column($favorites, 'restaurant_id')) ? 'favorited' : ''; ?>"
+                    data-id="<?= $restaurant['id']; ?>">
+                    ♥
+                </button>
+            </div>
+        <?php endforeach; ?>
+    </div>
 
         
         <div class="logout-container">
@@ -339,9 +368,54 @@
                 <button type="submit" class="logout-button">Logout</button>
             </form>
         </div>
-    </div>
+    
 
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+    const heartButtons = document.querySelectorAll('.heart-button');
+
+    heartButtons.forEach(button => {
+        button.addEventListener('click', async (event) => {
+            event.preventDefault(); // Prevent default behavior
+
+            const restaurantId = button.dataset.id; // Get the restaurant ID
+
+            try {
+                const response = await fetch(`/customer/toggleFavorite/${restaurantId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest' // Optional: helps backend identify AJAX request
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'added') {
+                    // Update heart button appearance
+                    document.querySelectorAll(`.heart-button[data-id="${restaurantId}"]`)
+                        .forEach(btn => btn.classList.add('favorited'));
+                } else if (data.status === 'removed') {
+                    // Update heart button appearance
+                    document.querySelectorAll(`.heart-button[data-id="${restaurantId}"]`)
+                        .forEach(btn => btn.classList.remove('favorited'));
+                }
+
+                // Optionally update favorites section dynamically if provided
+                if (data.favorites_html) {
+                    const favoritesContainer = document.getElementById('favorites-container');
+                    if (favoritesContainer) {
+                        favoritesContainer.innerHTML = data.favorites_html;
+                    }
+                }
+            } catch (error) {
+                console.error('Error toggling favorite:', error);
+                alert('Could not update favorites. Please try again.');
+            }
+        });
+    });
+});
+
         const rangeSlider = document.getElementById('range-slider');
         const rangeValue = document.getElementById('range-value');
 
