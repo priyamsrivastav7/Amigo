@@ -316,7 +316,7 @@
             <input type="range" min="1" max="20" value="1" class="range-slider__range" id="range-slider">
             <span class="range-slider__value" id="range-value">1 km</span>
         </div>
-        <div id="favorites-container" class="favorites-section">
+        <!-- <div id="favorites-container" class="favorites-section">
         
         <?php if (!empty($favorites)): ?>
             <h2>Your Favorites</h2>
@@ -334,7 +334,7 @@
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
-    </div>
+        </div> -->
 
 
 
@@ -363,11 +363,11 @@
     </div>
 
         
-        <div class="logout-container">
+    <div class="logout-container">
             <form action="/customer/logout" method="get">
                 <button type="submit" class="logout-button">Logout</button>
             </form>
-        </div>
+     </div>
     
 
     <script>

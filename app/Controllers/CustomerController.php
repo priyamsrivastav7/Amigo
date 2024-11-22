@@ -48,34 +48,10 @@ class CustomerController extends Controller
     }
     
 
-    public function favoriteRestaurants() {
-        $customerId = session()->get('customer_id');
-        $favoritesModel = new \App\Models\FavoritesModel();
-    
-        // Get favorite restaurant IDs
-        $favoriteIds = $favoritesModel
-            ->where('customer_id', $customerId)
-            ->findColumn('restaurant_id');
-    
-        if ($favoriteIds) {
-            $restaurantModel = new \App\Models\RestaurantModel();
-            $favorites = $restaurantModel
-                ->whereIn('id', $favoriteIds)
-                ->findAll();
-        } else {
-            $favorites = [];
-        }
-    
-        return view('customer_dashboard', ['favorites' => $favorites]);
-    }
-
     public function toggleFavorite($restaurantId = null)
     {
         $customerId = session()->get('customer_id');
-        // echo $restaurantId;
-        // die;
-
-        // Handle AJAX request
+        
         if ($this->request->isAJAX()) {
             $result = $this->favoriteModel->toggleFavorite($customerId, $restaurantId);
             
@@ -105,35 +81,6 @@ class CustomerController extends Controller
         
         return view('favorites', ['favorites' => $favorites]);
     }
-// public function toggleFavorite($restaurantId = null)
-// {
-//     // If this is an AJAX request
-//     if ($this->request->isAJAX()) {
-//         // Your existing favorite toggle logic
-//         $result = $this->favoriteModel->toggleFavorite(
-//             session()->get('customer_id'), 
-//             $restaurantId
-//         );
-
-//         // Prepare response
-//         $response = [
-//             'status' => $result ? 'added' : 'removed'
-//         ];
-
-//         // Optionally, if you want to update favorites section dynamically
-//         if ($result) {
-//             $favorites = $this->favoriteModel->getCustomerFavorites(session()->get('customer_id'));
-//             $response['favorites_html'] = $this->generateFavoritesHtml($favorites);
-//         }
-
-//         return $this->response->setJSON($response);
-//     }
-
-//     // Fallback to traditional form submission if not AJAX
-//     return redirect()->back();
-// }
-
-// Helper method to generate favorites HTML (optional)
 private function generateFavoritesHtml($favorites)
 {
     $html = '';
