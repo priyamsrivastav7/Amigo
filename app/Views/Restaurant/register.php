@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Restaurant Registration - Amigo</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <!-- <link rel="stylesheet" href="/css/style.css"> -->
     <script>
         // Function to get the user's geolocation
         function getLocation() {
@@ -25,7 +25,196 @@
         window.onload = function() {
             getLocation();
         };
+        
     </script>
+    <style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    height: 100vh; /* Ensures the body height matches the viewport */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #ff6b6b, #ffd93d);
+    overflow: hidden; /* Prevents unwanted scrolling */
+    position: relative;
+}
+
+body::before,
+body::after {
+    content: '';
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    z-index: 0;
+}
+
+body::before {
+    top: -120px;
+    left: -120px;
+}
+
+body::after {
+    bottom: -120px;
+    right: -120px;
+}
+
+.register-container {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 1.5rem; /* Reduced padding for smaller size */
+    border-radius: 16px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1), 
+                0 4px 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px; /* Reduced width for better fit */
+    max-height: 95vh; /* Ensures the box stays within the viewport */
+    overflow-y: auto; /* Makes the box scrollable if content overflows */
+    z-index: 1;
+    position: relative;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 1rem;
+    color: #333;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem; /* Adjusted for smaller screens */
+    font-weight: 600;
+}
+
+.form-group {
+    margin-bottom: 1rem; /* Reduced spacing for compact design */
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #444;
+    font-size: 0.9rem; /* Adjusted for smaller size */
+    font-weight: 500;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 0.7rem; /* Reduced padding for compact inputs */
+    border: 1.5px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.95rem; /* Slightly smaller font for inputs */
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.7);
+}
+
+textarea {
+    resize: none;
+    height: 80px; /* Reduced height for textarea */
+}
+
+input:focus, textarea:focus {
+    border-color: #ff6b6b;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.2);
+}
+
+button {
+    width: 100%;
+    padding: 0.8rem; /* Reduced padding for compact button */
+    background: linear-gradient(135deg, #ff6b6b, #ffd93d);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem; /* Adjusted button text size */
+    font-weight: 600;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: 0.5s;
+}
+
+button:hover::before {
+    left: 100%;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+}
+
+.error-message {
+    background: #fff4f4;
+    color: #ff6b6b;
+    padding: 0.8rem 1rem;
+    border: 1px solid #ffe6e6;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+}
+
+.error-message::before {
+    content: '⚠️';
+}
+
+.login-link {
+    text-align: center;
+    margin-top: 1rem; /* Reduced spacing */
+}
+
+.login-link p {
+    color: #636e72;
+    font-size: 0.85rem; /* Adjusted font size */
+}
+
+.login-link a {
+    color: #ff6b6b;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.login-link a:hover {
+    color: #ffd93d;
+}
+
+@media (max-width: 768px) {
+    .register-container {
+        padding: 1rem; /* Compact padding for smaller screens */
+        max-width: 90%; /* Dynamic width for narrow devices */
+    }
+
+    h2 {
+        font-size: 1.5rem; /* Adjusted header size */
+    }
+
+    button {
+        font-size: 0.9rem;
+    }
+}
+
+    </style>
 </head>
 <body>
     <div class="register-container">

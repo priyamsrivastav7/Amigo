@@ -8,7 +8,7 @@ class RestaurantModel extends Model
 {
     protected $table = 'restaurants';
     protected $primaryKey = 'id';
-    protected $allowedFields = ['name', 'email', 'phone_number', 'password', 'image', 'latitude', 'longitude', 'address']; // Include 'latitude' and 'longitude'
+    protected $allowedFields = ['name', 'email', 'phone_number', 'password', 'image', 'latitude', 'longitude', 'address','is_live','status']; // Include 'latitude' and 'longitude'
 
     // Method to verify restaurant login credentials
     public function verifyLogin($email, $password)

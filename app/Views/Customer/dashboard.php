@@ -286,7 +286,7 @@
 }
 
 .heart-button.favorited {
-    color: #ff4646;
+    color: red;
 }
 
 .heart-button:hover {
@@ -319,7 +319,7 @@
         <!-- <div id="favorites-container" class="favorites-section">
         
         <?php if (!empty($favorites)): ?>
-            <h2>Your Favorites</h2>
+            <h3>Your Favorites</h3>
             <div class="restaurant-list">
                 <?php foreach ($favorites as $restaurant): ?>
                     <div class="restaurant-item">
@@ -352,12 +352,19 @@
                 <p><strong>Email:</strong> <?= $restaurant['email']; ?></p>
                 <p><strong>Phone:</strong> <?= $restaurant['phone_number']; ?></p>
                 <p><strong>Address:</strong> <?= $restaurant['address']; ?></p>
+                <p><strong>Status:</strong> <?= $restaurant['status'] ? 'Open' : 'Closed'; ?></p>
+                
+                <?php if ($restaurant ['status'] == 1): ?>
                 <a href="/customer/menu/<?= $restaurant['id']; ?>" class="view-menu-button">View Menu</a>
-                <button type="button" 
-                    class="heart-button <?= in_array($restaurant['id'], array_column($favorites, 'restaurant_id')) ? 'favorited' : ''; ?>"
-                    data-id="<?= $restaurant['id']; ?>">
-                    ♥
-                </button>
+                <?php else: ?>
+                    <button class="view-menu-button" disabled>Restaurant is currently closed</button>
+                <?php endif; ?>
+
+                <button class="heart-button <?= in_array($restaurant['id'], $favoriteIds) ? 'favorited' : '' ?>" 
+    data-id="<?= $restaurant['id'] ?>">
+    ♥
+</button>
+
             </div>
         <?php endforeach; ?>
     </div>
@@ -370,129 +377,134 @@
      </div>
     
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-    const heartButtons = document.querySelectorAll('.heart-button');
+     <script>
+    document.addEventListener('DOMContentLoaded', () => {
+    const rangeSlider = document.getElementById('range-slider');
+    const rangeValue = document.getElementById('range-value');
+    let customerLatitude, customerLongitude;
 
-    heartButtons.forEach(button => {
-        button.addEventListener('click', async (event) => {
-            event.preventDefault(); // Prevent default behavior
+    // Geolocation and Distance Filtering
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            customerLatitude = position.coords.latitude;
+            customerLongitude = position.coords.longitude;
+            console.log(customerLatitude);
+            console.log(customerLongitude);
 
-            const restaurantId = button.dataset.id; // Get the restaurant ID
 
-            try {
-                const response = await fetch(`/customer/toggleFavorite/${restaurantId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest' // Optional: helps backend identify AJAX request
-                    }
-                });
+            // Update the restaurant list based on the selected range
+            updateRestaurantList(customerLatitude, customerLongitude, rangeSlider.value);
 
-                const data = await response.json();
+            // Add event listener to the range slider
+            rangeSlider.addEventListener('input', () => {
+                const range = rangeSlider.value;
+                rangeValue.textContent = `${range} km`;
+                updateRestaurantList(customerLatitude, customerLongitude, range);
+            });
+        },
+        (error) => {
+            console.error('Error getting customer location:', error);
+        }
+    );
 
-                if (data.status === 'added') {
-                    // Update heart button appearance
-                    document.querySelectorAll(`.heart-button[data-id="${restaurantId}"]`)
-                        .forEach(btn => btn.classList.add('favorited'));
-                } else if (data.status === 'removed') {
-                    // Update heart button appearance
-                    document.querySelectorAll(`.heart-button[data-id="${restaurantId}"]`)
-                        .forEach(btn => btn.classList.remove('favorited'));
-                }
-
-                // Optionally update favorites section dynamically if provided
-                if (data.favorites_html) {
-                    const favoritesContainer = document.getElementById('favorites-container');
-                    if (favoritesContainer) {
-                        favoritesContainer.innerHTML = data.favorites_html;
-                    }
-                }
-            } catch (error) {
-                console.error('Error toggling favorite:', error);
-                alert('Could not update favorites. Please try again.');
+    function updateRestaurantList(customerLatitude, customerLongitude, range) {
+        const restaurantItems = document.querySelectorAll('.restaurant-item');
+        restaurantItems.forEach((item) => {
+            const restaurantLatitude = parseFloat(item.dataset.latitude);
+            const restaurantLongitude = parseFloat(item.dataset.longitude);
+            const distance = calculateDistance(customerLatitude, customerLongitude, restaurantLatitude, restaurantLongitude);
+            
+            if (distance <= range) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
             }
         });
-    });
-});
+    }
 
-        const rangeSlider = document.getElementById('range-slider');
-        const rangeValue = document.getElementById('range-value');
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371; // Radius of the earth in km
+        const dLat = ((lat2 - lat1) * Math.PI) / 180;
+        const dLon = ((lon2 - lon1) * Math.PI) / 180;
+        const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos((lat1 * Math.PI) / 180) *
+            Math.cos((lat2 * Math.PI) / 180) *
+            Math.sin(dLon / 2) *
+            Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c; // Distance in km
+    }
 
-        // Get the customer's location
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const customerLatitude = position.coords.latitude;
-                const customerLongitude = position.coords.longitude;
+    // Favorite Toggle Functionality
+    function favoriteHandler(event) {
+        event.preventDefault();
 
-                // Update the restaurant list based on the selected range
-                updateRestaurantList(customerLatitude, customerLongitude, rangeSlider.value);
-
-                // Add event listener to the range slider
-                rangeSlider.addEventListener('input', () => {
-                    const range = rangeSlider.value;
-                    rangeValue.textContent = `${range} km`;
-                    updateRestaurantList(customerLatitude, customerLongitude, range);
-                });
-            },
-            (error) => {
-                console.error('Error getting customer location:', error);
-            }
-        );
-
-        function updateRestaurantList(customerLatitude, customerLongitude, range) {
-            const restaurantItems = document.querySelectorAll('.restaurant-item');
-            restaurantItems.forEach((item) => {
-                const restaurantLatitude = parseFloat(item.dataset.latitude);
-                const restaurantLongitude = parseFloat(item.dataset.longitude);
-                const distance = calculateDistance(customerLatitude, customerLongitude, restaurantLatitude, restaurantLongitude);
-                if (distance <= range) {
-                    item.style.display = 'block';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
-        }
-
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371; // Radius of the earth in km
-            const dLat = ((lat2 - lat1) * Math.PI) / 180;
-            const dLon = ((lon2 - lon1) * Math.PI) / 180;
-            const a =
-                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos((lat1 * Math.PI) / 180) *
-                Math.cos((lat2 * Math.PI) / 180) *
-                Math.sin(dLon / 2) *
-                Math.sin(dLon / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            return R * c; // Distance in km
-        }   
-        document.querySelectorAll('.heart-button').forEach(button => {
-    button.addEventListener('click', () => {
+        const button = event.currentTarget;
         const restaurantId = button.dataset.id;
 
-        fetch('/customer/toggleFavorite', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ restaurant_id: restaurantId }),
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'added') {
-                button.classList.add('favorited'); // Highlight as favorited
-            } else if (data.status === 'removed') {
-                button.classList.remove('favorited'); // Unhighlight
+        toggleFavorite(button, restaurantId);
+    }
+
+    async function toggleFavorite(button, restaurantId) {
+        try {
+            // Disable button during request to prevent multiple clicks
+            button.disabled = true;
+
+            const response = await fetch('/customer/toggleFavorite', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ restaurant_id: restaurantId }),
+                credentials: 'same-origin'
+            });
+
+            // Check if response is OK
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
             }
-            console.log(data)
-        })
-        .catch(error => console.error('Error:', error));
-    });
+
+            const data = await response.json();
+
+            if (data.status === 'added') {
+                button.classList.add('favorited');
+            } else if (data.status === 'removed') {
+                button.classList.remove('favorited');
+            } else if (data.status === 'error') {
+                alert(data.message || 'An error occurred');
+            }
+
+            // Update favorites section if HTML is provided
+            if (data.favorites_html) {
+                const favoritesContainer = document.getElementById('favorites-container');
+                if (favoritesContainer) {
+                    favoritesContainer.innerHTML = data.favorites_html;
+                    attachFavoriteListeners();
+                }
+            }
+        } catch (error) {
+            console.error('Error toggling favorite:', error);
+            alert('Could not update favorites. Please try again.');
+        } finally {
+            // Re-enable button
+            button.disabled = false;
+        }
+    }
+
+    function attachFavoriteListeners() {
+        document.querySelectorAll('.heart-button').forEach(button => {
+            // Remove existing listeners first to prevent multiple attachments
+            button.removeEventListener('click', favoriteHandler);
+            button.addEventListener('click', favoriteHandler);
+        });
+    }
+
+    // Initial attachment of favorite listeners
+    attachFavoriteListeners();
 });
+</script>
 
-
-
-    </script>
 </body>
 </html>

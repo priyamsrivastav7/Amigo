@@ -19,11 +19,17 @@ class RestaurantDashboard extends Controller
         // Load the MenuModel to fetch the restaurant's menu items
         $menuModel = new MenuModel();
         $restaurant_id = session()->get('restaurant_id');
+        $menuItems = $menuModel->where('restaurant_id', $restaurant_id)->findAll();
+        $restaurantModel = new \App\Models\RestaurantModel();
+        $restaurant = $restaurantModel->find($restaurant_id);
         
         // Get all menu items for the logged-in restaurant
-        $data['menu_items'] = $menuModel->where('restaurant_id', $restaurant_id)->findAll();
+        // $data['menu_items'] = $menuModel->where('restaurant_id', $restaurant_id)->findAll();
         
-        return view('restaurant/dashboard', $data);
+        return view('restaurant/dashboard', [
+            'restaurant' => $restaurant,
+            'menu_items' => $menuItems,
+        ]);
     }
 
     // Add a new menu item

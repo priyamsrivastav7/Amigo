@@ -17,39 +17,46 @@ class CustomerController extends Controller
     public function __construct()
     {
         // Load the database connection
+        $this->session = \config\Services::session();
         $this->db = \Config\Database::connect();
         $this->restaurantModel = new RestaurantModel();
         $this->favoriteModel = new FavoritesModel();
+        helper('jwt_helper');
     }
 
     // Customer Dashboard
     public function dashboard()
     {
         // Ensure the customer is logged in
-        $customerId = session()->get('customer_id');
-        if (!$customerId) {
-            return redirect()->to('/customer/login');
-        }
+        $jwt  = $this ->session->get('token');
+        $data  = $jwt ? validate_jwt($jwt) : null;
+        $customer_id = $this ->session->get('customer_id');
+        
+        if (!$data || !isset($data->data->id) || !$customer_id || $data->data->id != $customer_id) {
+        return redirect()->to('customer/login')->with('error', 'Please login to access the dashboard.');
+}
+
 
         // Fetch restaurants and favorite restaurants
         $restaurantModel = new RestaurantModel();
         $restaurants = $restaurantModel->findAll();
-
-        // $favoriteModel = new FavoritesModel();
-        // $favorites = $favoriteModel->getFavoritesByCustomer(session()->get('customer_id'));
-        $favorites = $this->favoriteModel->getFavoritesByCustomer($customerId);
-        $favoriteIds = array_column($favorites, 'restaurant_id');
+        $favorites = $this->favoriteModel->getFavoritesByCustomer($customer_id);
+        $favoriteIds = array_column($favorites, 'id');        
+        // var_dump($favoriteIds);
+        // die;
 
         return view('customer/dashboard', [
             'restaurants' => $restaurants,
-            'favorites' => $favorites,
-            'favoriteIds' => $favoriteIds
+            'favoriteIds' => $favoriteIds,
+            'favorites' => $favorites
         ]);
     }
     
 
     public function toggleFavorite($restaurantId = null)
     {
+        $json = $this->request->getJSON();
+        $restaurantId = $json->restaurant_id;
         $customerId = session()->get('customer_id');
         
         if ($this->request->isAJAX()) {
@@ -71,16 +78,20 @@ class CustomerController extends Controller
         return redirect()->back()->with('message', $message);
     }
     public function getFavorites()
-    {
-        $customerId = session()->get('customer_id');
-        $favorites = $this->favoriteModel->getFavoritesByCustomer($customerId);
-        
-        if ($this->request->isAJAX()) {
-            return $this->response->setJSON(['favorites' => $favorites]);
-        }
-        
-        return view('favorites', ['favorites' => $favorites]);
+{
+    $customerId = session()->get('customer_id');
+    $favorites = $this->favoriteModel->getFavoritesByCustomer($customerId);
+
+    // Extract restaurant IDs from the favorites data
+    $favoriteIds = array_column($favorites, 'id'); // Adjust key based on database column name
+
+    if ($this->request->isAJAX()) {
+        return $this->response->setJSON(['favorites' => $favoriteIds]);
     }
+
+    return view('favorites', ['favorites' => $favoriteIds]);
+}
+
 private function generateFavoritesHtml($favorites)
 {
     $html = '';
@@ -92,11 +103,6 @@ private function generateFavoritesHtml($favorites)
     }
     return $html;
 }
-
-    
-    
-
-    
 
     // Customer Login
     public function login()
@@ -110,21 +116,50 @@ private function generateFavoritesHtml($favorites)
 
     // Handle Customer Login
     public function loginUser()
-    {
-        $email = $this->request->getPost('email');
-        $password = $this->request->getPost('password');
+{
+    // Validate reCAPTCHA response
+    $recaptchaResponse = $this->request->getPost('g-recaptcha-response');
+    $secretKey = '6LfIOokqAAAAAH5laKejKAv9kO_QjzK2N1JIXW7N'; // Replace with your secret key
+    $verifyResponse = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret={$secretKey}&response={$recaptchaResponse}");
+    $responseData = json_decode($verifyResponse);
 
-        $model = new CustomerModel();
-        $customer = $model->verifyLogin($email, $password);
-
-        if ($customer) {
-            session()->set('customer_id', $customer['id']);
-            return redirect()->to('customer/dashboard');
-        } else {
-            session()->setFlashdata('error', 'Invalid email or password.');
-            return redirect()->to('/customer/login');
-        }
+    if (!$responseData->success) {
+        return redirect()->back()->with('error', 'reCAPTCHA verification failed. Please try again.');
     }
+
+    // Retrieve user input
+    $email = $this->request->getPost('email');
+    $password = $this->request->getPost('password');
+
+    // Verify login credentials
+    $model = new CustomerModel();
+    $customer = $model->verifyLogin($email, $password);
+
+    if ($customer) {
+        // Prepare data for JWT
+        $data = [
+            'id' => $customer['id'],
+            'email' => $customer['email'],
+        ];
+
+        // Generate JWT token
+        $jwt = generate_jwt($data);
+
+        // Set session variables
+        $this->session->set([
+            'customer_id' => $customer['id'],
+            'token' => $jwt,
+        ]);
+
+        // Redirect to dashboard
+        return redirect()->to('customer/dashboard');
+    } else {
+        // Flash error message for invalid login
+        session()->setFlashdata('error', 'Invalid email or password.');
+        return redirect()->to('customer/login');
+    }
+}
+
 
     // Customer Registration
     public function register()

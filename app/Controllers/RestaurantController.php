@@ -155,6 +155,37 @@ public function logout()
         // Redirect to the login page
         return redirect()->to('/restaurant/login')->with('success', 'You have been logged out successfully.');
     }
+    public function updateStatus()
+{
+    // Ensure the user is logged in
+    if (!session()->has('restaurant_id')) {
+        return redirect()->to('/restaurant/login')->with('error', 'Please log in first.');
+    }
+
+    // Get the logged-in restaurant's ID
+    $restaurantId = session()->get('restaurant_id');
+
+    // Get the status from the POST request
+    $status = $this->request->getPost('status');
+
+    // Validate the status input
+    if (!in_array($status, ['0', '1'], true)) {
+        return redirect()->back()->with('error', 'Invalid status value.');
+    }
+
+    // Load the RestaurantModel
+    $restaurantModel = new \App\Models\RestaurantModel();
+
+    // Update the status in the database
+    $updateData = ['status' => $status];
+    if ($restaurantModel->update($restaurantId, $updateData)) {
+        return redirect()->to('/restaurant/dashboard')->with('success', 'Status updated successfully.');
+    } else {
+        return redirect()->back()->with('error', 'Failed to update status. Please try again.');
+    }
+}
+
 
 
 }
+

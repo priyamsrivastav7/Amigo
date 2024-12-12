@@ -220,6 +220,7 @@
             }
         }
     </style>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
     <div class="login-container">
@@ -234,17 +235,20 @@
         <?php endif; ?>
         
         <form action="/customer/loginUser" method="post">
-            <?= csrf_field(); ?>
-            <div class="form-group">
-                <label for="email">Email Address</label>
-                <input type="email" name="email" id="email" placeholder="Enter your email" required>
-            </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" name="password" id="password" placeholder="Enter your password" required>
-            </div>
-            <button type="submit">Sign In</button>
-        </form>
+    <?= csrf_field(); ?>
+    <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" name="email" id="email" placeholder="Enter your email" required>
+    </div>
+    <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" name="password" id="password" placeholder="Enter your password" required>
+    </div>
+    <!-- Add the reCAPTCHA widget -->
+    <div class="g-recaptcha" data-sitekey="6LfIOokqAAAAAEQU9huijCZGbZdmzjnbluezRZb_"></div>
+    <button type="submit">Sign In</button>
+</form>
+
 
         <div class="register-link">
             <p>New to our restaurant? <a href="/customer/register">Create Account</a></p>

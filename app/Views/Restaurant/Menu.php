@@ -328,15 +328,63 @@
             .menu-item {
                 margin: 0 1rem;
             }
+            
         }
+        .navbar ul li:first-child button {
+    color: #5a3f2f; /* Rich, deep brown tone */
+    font-weight: 500;
+    background-color: transparent;
+    border: 1px solid #8b6b4f; /* Soft, warm border */
+    border-radius: 4px;
+    padding: 10px 20px;
+    font-family: 'Optima', 'Palatino Linotype', serif;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    transition: all 0.3s ease-in-out;
+    position: relative;
+    overflow: hidden;
+    outline: none;
+}
 
-        /* Rest of your existing CSS remains the same */
+.navbar ul li:first-child button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        120deg, 
+        transparent, 
+        rgba(139, 107, 79, 0.1), 
+        transparent
+    );
+    transition: all 0.4s ease-in-out;
+}
+
+.navbar ul li:first-child button:hover {
+    color: #ffffff;
+    background-color: #5a3f2f;
+    border-color: #5a3f2f;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.navbar ul li:first-child button:hover::before {
+    left: 100%;
+}
+
+.navbar ul li:first-child button:active {
+    transform: scale(0.98);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
     </style>
 </head>
 <body>
     <!-- Your existing navbar and menu container HTML remains the same -->
     <nav class="navbar">
         <ul>
+            <li><button onclick="window.history.back()">Back</button></li>
             <li><button onclick="filterItems('All')" class="active">All</button></li>
             <li><button onclick="filterItems('Beverages')">Beverages</button></li>
             <li><button onclick="filterItems('Starter')">Starter</button></li>
@@ -360,10 +408,35 @@
         <div class="total-content">
             <div class="total-items">Items: <span id="total-items-count">0</span></div>
             <div class="total-price">Total: Rs. <span id="total-price-amount">0</span></div>
+            <button id="checkout-btn" onclick="proceedToCheckout()">Proceed to Checkout</button>
         </div>
     </div>
 
     <script>
+        function proceedToCheckout() {
+        // Send cart data to the server
+        const cartData = JSON.stringify(cart);
+        // console.log(cartData);
+        
+        // Redirect to the checkout page with cart data
+        fetch('<?= base_url('customer/checkout') ?>', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: cartData
+        })
+        .then(response => response.json())
+                //console.log(response);
+        
+          .then(data => {
+              if (data.success) {
+                  window.location.href = '<?= base_url('customer/checkout') ?>'; // Redirect to checkout page
+              } else {
+                  alert('There was an error. Please try again.');
+              }
+          });
+    }
     const menuItems = {
         'Beverages': [],
         'Starter': [],
@@ -501,6 +574,8 @@
 
     // Initialize with all items
     filterItems('All');
+    
+
 </script>
 
 </body>

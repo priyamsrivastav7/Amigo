@@ -13,12 +13,15 @@ class FavoritesModel extends Model
     protected $updatedField = 'updated_at';
 
     public function getFavoritesByCustomer($customerId)
-    {
-        return $this->select('favorites.*, restaurants.name, restaurants.image, restaurants.email, restaurants.phone_number, restaurants.address')
-                    ->join('restaurants', 'restaurants.id = favorites.restaurant_id')
-                    ->where('favorites.customer_id', $customerId)
-                    ->findAll();
-    }
+{
+    return $this->db->table('favorites')
+        ->select('restaurants.id, restaurants.name, restaurants.image, restaurants.email, restaurants.phone_number, restaurants.address')
+        ->join('restaurants', 'favorites.restaurant_id = restaurants.id')
+        ->where('favorites.customer_id', $customerId)
+        ->get()
+        ->getResultArray();
+}
+
 
     public function toggleFavorite($customerId, $restaurantId)
     {

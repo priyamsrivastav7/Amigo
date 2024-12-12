@@ -5,7 +5,119 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Restaurant Dashboard</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <!-- <link rel="stylesheet" href="/css/style.css"> -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        .dashboard-container {
+            width: 80%;
+            margin: 20px auto;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        h2, h3 {
+            color: #444;
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"], input[type="number"], select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        input[type="file"] {
+            border: none;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        table th {
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        .menu-item-image {
+            border-radius: 5px;
+            object-fit: cover;
+        }
+
+        form.inline-form {
+            display: inline-block;
+        }
+
+        .status-enabled {
+            color: green;
+            font-weight: bold;
+        }
+
+        .status-disabled {
+            color: red;
+            font-weight: bold;
+        }
+
+        /* Responsive Design */
+        @media screen and (max-width: 768px) {
+            .dashboard-container {
+                width: 95%;
+                padding: 10px;
+            }
+
+            table {
+                font-size: 14px;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="dashboard-container">
@@ -16,6 +128,17 @@
             </form>
         </div>
         <h2>Welcome, <?= session()->get('restaurant_name'); ?>!</h2>
+
+        <h3>Restaurant Status</h3>
+        <form action="<?= base_url('/restaurant/updateStatus') ?>" method="post">
+            <label for="status">Status:</label>
+            <select name="status" id="status">
+                <option value="1" <?= $restaurant['status'] == 1 ? 'selected' : ''; ?>>Open</option>
+                <option value="0" <?= $restaurant['status'] == 0 ? 'selected' : ''; ?>>Closed</option>
+            </select>
+            <button type="submit">Update Status</button>
+        </form>
+
 
         <h3>Add New Menu Item</h3>
         <form action="<?= base_url('/restaurant/addMenuItem') ?>" method="post" enctype="multipart/form-data">

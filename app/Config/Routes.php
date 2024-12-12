@@ -32,10 +32,17 @@ $routes->post('restaurant/addMenuItem', 'RestaurantDashboard::addMenuItem');
 $routes->post('/restaurant/updateQuantity/(:num)', 'RestaurantDashboard::updateQuantity/$1');
 $routes->post('restaurant/deleteMenuItem/(:num)', 'RestaurantDashboard::deleteMenuItem/$1');
 $routes->post('/restaurant/toggleStatus/(:num)', 'RestaurantDashboard::toggleStatus/$1');
-
-
-$routes->post('customer/toggleFavorite/(:num)', 'CustomerController::toggleFavorite/$1');
-
+//closed or open
+$routes->post('/restaurant/updateStatus', 'RestaurantController::updateStatus');
 
 
 
+$routes->post('customer/toggleFavorite', 'CustomerController::toggleFavorite');
+
+//for cart 
+$routes->get('customer/checkout', 'CheckoutController::index');
+$routes->post('customer/checkout', 'CheckoutController::checkout');
+
+//for payment
+
+$routes->post('initiate-payment', 'CheckoutController::initiatePayment');
