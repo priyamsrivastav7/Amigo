@@ -312,26 +312,6 @@
             <input type="range" min="1" max="20" value="1" class="range-slider__range" id="range-slider">
             <span class="range-slider__value" id="range-value">1 km</span>
         </div>
-        
-        <?php if (!empty($favorites)): ?>
-            <h3>Your Favorites</h3>
-            <div class="restaurant-list">
-                <?php foreach ($favorites as $restaurant): ?>
-                    <div class="restaurant-item">
-                        <img src="<?= base_url('/' . $restaurant['image']); ?>" alt="<?= $restaurant['name']; ?>" class="restaurant-image">
-                        <h4><?= $restaurant['name']; ?></h4>
-                        <p><strong>Email:</strong> <?= $restaurant['email']; ?></p>
-                        <p><strong>Phone:</strong> <?= $restaurant['phone_number']; ?></p>
-                        <p><strong>Address:</strong> <?= $restaurant['address']; ?></p>
-                        <a href="/customer/menu/<?= $restaurant['id']; ?>" class="view-menu-button">View Menu</a>
-                        <button type="button" class="heart-button favorited" data-id="<?= $restaurant['id']; ?>">♥</button>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
-        </div> -->
-
-
 
         <h3>All Restaurants</h3>
         
