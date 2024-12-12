@@ -4,13 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Restaurant Registration - Amigo</title>
-    <!-- <link rel="stylesheet" href="/css/style.css"> -->
     <script>
-        // Function to get the user's geolocation
+        
         function getLocation() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function(position) {
-                    // Fill in the latitude and longitude fields with the user's geolocation data
                     document.getElementById("latitude").value = position.coords.latitude;
                     document.getElementById("longitude").value = position.coords.longitude;
                 }, function(error) {
@@ -21,7 +19,7 @@
             }
         }
 
-        // Automatically call getLocation when the page loads
+        
         window.onload = function() {
             getLocation();
         };
@@ -36,12 +34,12 @@
 }
 
 body {
-    height: 100vh; /* Ensures the body height matches the viewport */
+    height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
     background: linear-gradient(135deg, #ff6b6b, #ffd93d);
-    overflow: hidden; /* Prevents unwanted scrolling */
+    overflow: hidden; 
     position: relative;
 }
 
@@ -68,14 +66,14 @@ body::after {
 
 .register-container {
     background: rgba(255, 255, 255, 0.9);
-    padding: 1.5rem; /* Reduced padding for smaller size */
+    padding: 1.5rem; 
     border-radius: 16px;
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1), 
                 0 4px 10px rgba(0, 0, 0, 0.1);
     width: 100%;
-    max-width: 400px; /* Reduced width for better fit */
-    max-height: 95vh; /* Ensures the box stays within the viewport */
-    overflow-y: auto; /* Makes the box scrollable if content overflows */
+    max-width: 400px;
+    max-height: 95vh;
+    overflow-y: auto; 
     z-index: 1;
     position: relative;
     backdrop-filter: blur(10px);
@@ -87,35 +85,35 @@ h2 {
     margin-bottom: 1rem;
     color: #333;
     font-family: 'Playfair Display', serif;
-    font-size: 1.8rem; /* Adjusted for smaller screens */
+    font-size: 1.8rem; 
     font-weight: 600;
 }
 
 .form-group {
-    margin-bottom: 1rem; /* Reduced spacing for compact design */
+    margin-bottom: 1rem; 
 }
 
 label {
     display: block;
     margin-bottom: 0.5rem;
     color: #444;
-    font-size: 0.9rem; /* Adjusted for smaller size */
+    font-size: 0.9rem; 
     font-weight: 500;
 }
 
 input, textarea {
     width: 100%;
-    padding: 0.7rem; /* Reduced padding for compact inputs */
+    padding: 0.7rem;
     border: 1.5px solid #ddd;
     border-radius: 8px;
-    font-size: 0.95rem; /* Slightly smaller font for inputs */
+    font-size: 0.95rem; 
     transition: all 0.3s ease;
     background: rgba(255, 255, 255, 0.7);
 }
 
 textarea {
     resize: none;
-    height: 80px; /* Reduced height for textarea */
+    height: 80px;
 }
 
 input:focus, textarea:focus {
@@ -126,12 +124,12 @@ input:focus, textarea:focus {
 
 button {
     width: 100%;
-    padding: 0.8rem; /* Reduced padding for compact button */
+    padding: 0.8rem; 
     background: linear-gradient(135deg, #ff6b6b, #ffd93d);
     color: #fff;
     border: none;
     border-radius: 8px;
-    font-size: 1rem; /* Adjusted button text size */
+    font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
     text-transform: uppercase;
@@ -180,12 +178,12 @@ button:hover {
 
 .login-link {
     text-align: center;
-    margin-top: 1rem; /* Reduced spacing */
+    margin-top: 1rem; 
 }
 
 .login-link p {
     color: #636e72;
-    font-size: 0.85rem; /* Adjusted font size */
+    font-size: 0.85rem;
 }
 
 .login-link a {
@@ -201,12 +199,12 @@ button:hover {
 
 @media (max-width: 768px) {
     .register-container {
-        padding: 1rem; /* Compact padding for smaller screens */
-        max-width: 90%; /* Dynamic width for narrow devices */
+        padding: 1rem; 
+        max-width: 90%; 
     }
 
     h2 {
-        font-size: 1.5rem; /* Adjusted header size */
+        font-size: 1.5rem; 
     }
 
     button {
@@ -220,7 +218,7 @@ button:hover {
     <div class="register-container">
         <h2>Restaurant Registration</h2>
 
-        <!-- Display error or success message if any -->
+        
         <?php if(session()->getFlashdata('error')): ?>
             <div class="error-message">
                 <?= session()->getFlashdata('error'); ?>
@@ -228,7 +226,7 @@ button:hover {
         <?php endif; ?>
 
         <form action="/restaurant/registerSubmit" method="post" enctype="multipart/form-data">
-            <?= csrf_field(); ?> <!-- CSRF Protection -->
+            <?= csrf_field(); ?> 
 
             <div class="form-group">
                 <label for="name">Restaurant Name</label>
@@ -260,7 +258,6 @@ button:hover {
                 <input type="file" name="image" id="image" accept="image/*" required>
             </div>
 
-            <!-- Latitude and Longitude Input Fields (hidden fields for auto population) -->
             <div class="form-group" hidden>
                 <label for="latitude">Latitude</label>
                 <input type="text" name="latitude" id="latitude" placeholder="Latitude" readonly>
