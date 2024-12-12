@@ -6,10 +6,6 @@
     <title>Customer Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <style>
-        /* Existing CSS styles */
-        /* ... */
-
-        /* New styles for the Favorite button */
         * {
             margin: 0;
             padding: 0;
@@ -316,7 +312,6 @@
             <input type="range" min="1" max="20" value="1" class="range-slider__range" id="range-slider">
             <span class="range-slider__value" id="range-value">1 km</span>
         </div>
-        <!-- <div id="favorites-container" class="favorites-section">
         
         <?php if (!empty($favorites)): ?>
             <h3>Your Favorites</h3>
@@ -382,8 +377,6 @@
     const rangeSlider = document.getElementById('range-slider');
     const rangeValue = document.getElementById('range-value');
     let customerLatitude, customerLongitude;
-
-    // Geolocation and Distance Filtering
     navigator.geolocation.getCurrentPosition(
         (position) => {
             customerLatitude = position.coords.latitude;
@@ -392,10 +385,10 @@
             console.log(customerLongitude);
 
 
-            // Update the restaurant list based on the selected range
+            
             updateRestaurantList(customerLatitude, customerLongitude, rangeSlider.value);
 
-            // Add event listener to the range slider
+            
             rangeSlider.addEventListener('input', () => {
                 const range = rangeSlider.value;
                 rangeValue.textContent = `${range} km`;
@@ -423,7 +416,7 @@
     }
 
     function calculateDistance(lat1, lon1, lat2, lon2) {
-        const R = 6371; // Radius of the earth in km
+        const R = 6371; 
         const dLat = ((lat2 - lat1) * Math.PI) / 180;
         const dLon = ((lon2 - lon1) * Math.PI) / 180;
         const a =
@@ -433,10 +426,10 @@
             Math.sin(dLon / 2) *
             Math.sin(dLon / 2);
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c; // Distance in km
+        return R * c; 
     }
 
-    // Favorite Toggle Functionality
+    
     function favoriteHandler(event) {
         event.preventDefault();
 
@@ -448,7 +441,7 @@
 
     async function toggleFavorite(button, restaurantId) {
         try {
-            // Disable button during request to prevent multiple clicks
+            
             button.disabled = true;
 
             const response = await fetch('/customer/toggleFavorite', {
@@ -461,7 +454,7 @@
                 credentials: 'same-origin'
             });
 
-            // Check if response is OK
+            
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
@@ -476,7 +469,7 @@
                 alert(data.message || 'An error occurred');
             }
 
-            // Update favorites section if HTML is provided
+            
             if (data.favorites_html) {
                 const favoritesContainer = document.getElementById('favorites-container');
                 if (favoritesContainer) {
@@ -488,20 +481,20 @@
             console.error('Error toggling favorite:', error);
             alert('Could not update favorites. Please try again.');
         } finally {
-            // Re-enable button
+            
             button.disabled = false;
         }
     }
 
     function attachFavoriteListeners() {
         document.querySelectorAll('.heart-button').forEach(button => {
-            // Remove existing listeners first to prevent multiple attachments
+            
             button.removeEventListener('click', favoriteHandler);
             button.addEventListener('click', favoriteHandler);
         });
     }
 
-    // Initial attachment of favorite listeners
+    
     attachFavoriteListeners();
 });
 </script>

@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Restaurant Login - Amigo</title>
-    <!-- <link rel="stylesheet" href="/css/style.css"> Include your CSS File Here -->
     <style>
         * {
             margin: 0;
@@ -25,7 +24,7 @@
             overflow: hidden;
         }
 
-        /* Decorative food-themed background elements */
+        
         body::before,
         body::after {
             content: '';
@@ -77,8 +76,8 @@
 
         .temp {
     display: flex;
-    align-items: center; /* Aligns items vertically */
-    justify-content: center; /* Aligns items horizontally */
+    align-items: center; 
+    justify-content: center; 
 }
 
         h2 {
@@ -205,7 +204,7 @@
             50% { transform: translateY(-10px); }
         }
 
-        /* Glass morphism effect on hover */
+        
         .login-container:hover {
             box-shadow: 0 25px 70px rgba(0, 0, 0, 0.15),
                         0 10px 25px rgba(0, 0, 0, 0.2);
@@ -232,7 +231,7 @@
     <div class="login-container">
         <div class="temp" ><h2>Restaurant Login</h2></div>
         
-        <!-- Display error or success message if any -->
+        
         <?php if(session()->getFlashdata('error')): ?>
             <div class="error-message">
                 <?= session()->getFlashdata('error'); ?>
@@ -240,7 +239,7 @@
         <?php endif; ?>
 
         <form action="/restaurant/loginSubmit" method="post">
-            <?= csrf_field(); ?> <!-- CSRF Protection -->
+            <?= csrf_field(); ?> 
 
             <div class="form-group">
                 <label for="email">Email</label>

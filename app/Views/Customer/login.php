@@ -25,7 +25,7 @@
             overflow: hidden;
         }
 
-        /* Decorative food-themed background elements */
+        
         body::before,
         body::after {
             content: '';
@@ -199,7 +199,7 @@
             50% { transform: translateY(-10px); }
         }
 
-        /* Glass morphism effect on hover */
+       
         .login-container:hover {
             box-shadow: 0 25px 70px rgba(0, 0, 0, 0.15),
                         0 10px 25px rgba(0, 0, 0, 0.2);
@@ -244,7 +244,6 @@
         <label for="password">Password</label>
         <input type="password" name="password" id="password" placeholder="Enter your password" required>
     </div>
-    <!-- Add the reCAPTCHA widget -->
     <div class="g-recaptcha" data-sitekey="6LfIOokqAAAAAEQU9huijCZGbZdmzjnbluezRZb_"></div>
     <button type="submit">Sign In</button>
 </form>

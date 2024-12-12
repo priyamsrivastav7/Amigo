@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customer Registration - Amigo</title>
-    <link rel="stylesheet" href="/css/style.css"> <!-- Include your CSS File Here -->
+    <link rel="stylesheet" href="/css/style.css"> 
     <style>
         body {
     min-height: 100vh;
@@ -185,7 +185,7 @@ button:active {
     <div class="register-container">
         <h2>Customer Registration</h2>
 
-        <!-- Display error or success message if any -->
+        
         <?php if(session()->getFlashdata('error')): ?>
             <div class="error-message">
                 <?= session()->getFlashdata('error'); ?>
@@ -193,7 +193,7 @@ button:active {
         <?php endif; ?>
 
         <form action="/customer/registerSubmit" method="post">
-            <?= csrf_field(); ?> <!-- CSRF Protection -->
+            <?= csrf_field(); ?> 
 
             <div class="form-group">
                 <label for="name">Full Name</label>

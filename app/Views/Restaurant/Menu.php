@@ -16,7 +16,7 @@
         body {
             background: #f8f9fa;
             min-height: 100vh;
-            padding-bottom: 80px; /* Added to accommodate the total bar */
+            padding-bottom: 80px; 
         }
 
         .navbar {
@@ -330,61 +330,14 @@
             }
             
         }
-        .navbar ul li:first-child button {
-    color: #5a3f2f; /* Rich, deep brown tone */
-    font-weight: 500;
-    background-color: transparent;
-    border: 1px solid #8b6b4f; /* Soft, warm border */
-    border-radius: 4px;
-    padding: 10px 20px;
-    font-family: 'Optima', 'Palatino Linotype', serif;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    transition: all 0.3s ease-in-out;
-    position: relative;
-    overflow: hidden;
-    outline: none;
-}
-
-.navbar ul li:first-child button::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-        120deg, 
-        transparent, 
-        rgba(139, 107, 79, 0.1), 
-        transparent
-    );
-    transition: all 0.4s ease-in-out;
-}
-
-.navbar ul li:first-child button:hover {
-    color: #ffffff;
-    background-color: #5a3f2f;
-    border-color: #5a3f2f;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.navbar ul li:first-child button:hover::before {
-    left: 100%;
-}
-
-.navbar ul li:first-child button:active {
-    transform: scale(0.98);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
 
     </style>
 </head>
 <body>
-    <!-- Your existing navbar and menu container HTML remains the same -->
+   
     <nav class="navbar">
         <ul>
-            <li><button onclick="window.history.back()">Back</button></li>
+            <!-- <li><button onclick="window.history.back()">Back</button></li> -->
             <li><button onclick="filterItems('All')" class="active">All</button></li>
             <li><button onclick="filterItems('Beverages')">Beverages</button></li>
             <li><button onclick="filterItems('Starter')">Starter</button></li>
@@ -394,9 +347,9 @@
     </nav>
 
     <div class="menu-container">
+    <button onclick="window.history.back()">Back</button>
         <h2 id="category-title">All Menu Items</h2>
         <div class="menu-items" id="menu-items-container">
-            <!-- Menu items will be dynamically populated here -->
         </div>
         <div class="empty-state">
             <p>No items available in this category at the moment.</p>
@@ -414,11 +367,8 @@
 
     <script>
         function proceedToCheckout() {
-        // Send cart data to the server
         const cartData = JSON.stringify(cart);
-        // console.log(cartData);
-        
-        // Redirect to the checkout page with cart data
+       
         fetch('<?= base_url('customer/checkout') ?>', {
             method: 'POST',
             headers: {
@@ -427,7 +377,7 @@
             body: cartData
         })
         .then(response => response.json())
-                //console.log(response);
+                
         
           .then(data => {
               if (data.success) {
@@ -444,10 +394,9 @@
         'Dessert': []
     };
 
-    // Populate menuItems with PHP data
     <?php foreach ($menuItems as $item): ?>
     menuItems['<?= esc($item['type']) ?>'].push({
-        id: '<?= esc($item['id']) ?>', // Ensure unique ID is passed
+        id: '<?= esc($item['id']) ?>', 
         name: '<?= esc($item['name']) ?>',
         type: '<?= esc($item['type']) ?>',
         price: <?= esc($item['price']) ?>,
@@ -459,19 +408,18 @@
     const cart = {};
 
     function updateQuantity(itemId, increment) {
-        // Find the item from menuItems
+      
         const item = Object.values(menuItems)
             .flat()
             .find(item => item.id === itemId);
 
         if (!item) return;
 
-        // Initialize item in cart if not already added
         if (!cart[itemId]) {
             cart[itemId] = { ...item, quantity: 0 };
         }
 
-        // Update quantity in the cart
+       
         if (increment && cart[itemId].quantity < item.quantity_limit) {
             cart[itemId].quantity++;
         } else if (!increment && cart[itemId].quantity > 0) {
@@ -506,7 +454,7 @@
     }
 
     function filterItems(category) {
-        // Update active button
+        
         document.querySelectorAll('.navbar button').forEach(btn => {
             btn.classList.remove('active');
             if (btn.textContent === category) {
@@ -514,10 +462,10 @@
             }
         });
 
-        // Update category title
+        
         document.getElementById('category-title').textContent = category === 'All' ? 'All Menu Items' : category;
 
-        // Get items to display
+       
         let itemsToDisplay = [];
         if (category === 'All') {
             Object.values(menuItems).forEach(categoryItems => {
@@ -527,7 +475,7 @@
             itemsToDisplay = menuItems[category] || [];
         }
 
-        // Display items
+        
         const container = document.getElementById('menu-items-container');
         const emptyState = document.querySelector('.empty-state');
 
@@ -563,7 +511,7 @@
                 </div>
             `).join('');
 
-            // Restore quantities for items in cart
+         
             itemsToDisplay.forEach(item => {
                 if (cart[item.id]) {
                     updateItemDisplay(item.id);
@@ -572,7 +520,7 @@
         }
     }
 
-    // Initialize with all items
+    
     filterItems('All');
     
 

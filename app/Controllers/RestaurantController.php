@@ -8,21 +8,32 @@ use CodeIgniter\Controller;
 
 class RestaurantController extends Controller
 {
-    // Display the restaurant login page
+    
     public function login()
     {
         
         return view('restaurant/login');
     }
 
-    // Handle restaurant login form submission
+    
     public function loginSubmit()
 {
-    // Get form data
+    $recaptchaResponse = $this->request->getPost('g-recaptcha-response');
+    $secretKey = '6LfIOokqAAAAAH5laKejKAv9kO_QjzK2N1JIXW7N'; // Replace with your secret key
+    $verifyResponse = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret={$secretKey}&response={$recaptchaResponse}");
+    $responseData = json_decode($verifyResponse);
+
+    if (!$responseData->success) {
+        return redirect()->back()->with('error', 'reCAPTCHA verification failed. Please try again.');
+    }
+    
+
+
+    
     $email = $this->request->getPost('email');
     $password = $this->request->getPost('password');
 
-    // Validate the form inputs
+    
     $validation = \Config\Services::validation();
     $validation->setRules([
         'email' => 'required|valid_email',
@@ -33,18 +44,18 @@ class RestaurantController extends Controller
         return redirect()->back()->withInput()->with('error', $validation->listErrors());
     }
 
-    // Instantiate the RestaurantModel
+   
     $model = new RestaurantModel();
 
-    // Verify login credentials
+    
     $restaurant = $model->verifyLogin($email, $password);
 
     if ($restaurant) {
-        // Store session data
+        
         session()->set('restaurant_id', $restaurant['id']);
         session()->set('restaurant_name', $restaurant['name']);
 
-        return redirect()->to('/restaurant/dashboard'); // Redirect to dashboard
+        return redirect()->to('/restaurant/dashboard'); 
     } else {
         session()->setFlashdata('error', 'Invalid email or password.');
         return redirect()->to('/restaurant/login');
@@ -57,10 +68,10 @@ class RestaurantController extends Controller
         return view('restaurant/register');
     }
 
-    // Handle restaurant registration form submission
+    
     public function registerSubmit()
 {
-    // Get form data
+    
     $name = $this->request->getPost('name');
     $email = $this->request->getPost('email');
     $phone_number = $this->request->getPost('phone_number');
@@ -69,7 +80,7 @@ class RestaurantController extends Controller
     $latitude = $this->request->getPost('latitude');
     $longitude = $this->request->getPost('longitude');
 
-    // Validate the form input
+    
     $validation =  \Config\Services::validation();
     $validation->setRules([
         'name' => 'required',
@@ -86,41 +97,41 @@ class RestaurantController extends Controller
         return redirect()->back()->withInput()->with('error', $validation->listErrors());
     }
 
-    // Handle image upload
+    
     $imageFile = $this->request->getFile('image');
     if ($imageFile->isValid() && !$imageFile->hasMoved()) {
-        // Generate a random name for the image
+        
         $imageName = $imageFile->getRandomName();
         
-        // Move the image to the public/restaurant folder
+        
         $imageFile->move(WRITEPATH . '../public/restaurant', $imageName);
         
-        // Save the image path in the database (relative to the public folder)
+        
         $imagePath = 'restaurant/' . $imageName;
     } else {
-        // If no image is uploaded, set the imagePath to null
+        
         $imagePath = null;
     }
 
-    // Instantiate the RestaurantModel
+    
     $model = new RestaurantModel();
 
-    // Hash the password
+    
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-    // Prepare the data for insertion
+    
     $data = [
         'name' => $name,
         'email' => $email,
         'phone_number' => $phone_number,
         'password' => $hashedPassword,
         'address' => $address,
-        'image' => $imagePath, // Store the image path in the database
-        'latitude' => $latitude, // Save the latitude
-        'longitude' => $longitude, // Save the longitude
+        'image' => $imagePath, 
+        'latitude' => $latitude,
+        'longitude' => $longitude, 
     ];
 
-    // Insert restaurant data into the database
+    
     if ($model->save($data)) {
         return redirect()->to('/restaurant/login')->with('success', 'Registration successful! Please login.');
     } else {
@@ -129,54 +140,54 @@ class RestaurantController extends Controller
 }
 public function RestaurantMenu($restaurantId)
 {
-    // Load the restaurant and menu models
+    
     $restaurantModel = new RestaurantModel();
     $menuModel = new MenuModel();
 
-    // Get the restaurant data
+   
     $restaurant = $restaurantModel->find($restaurantId);
 
-    // If the restaurant does not exist, redirect back
+    
     if (!$restaurant) {
         return redirect()->to('/customer/dashboard')->with('error', 'Restaurant not found.');
     }
 
-    // Get the menu for the restaurant
+    
     $menu = $menuModel->where('restaurant_id', $restaurantId)->findAll();
 
-    // Pass the data to the view
+    
     return view('restaurant/menu', ['restaurant' => $restaurant, 'menu' => $menu]);
 }
 public function logout()
     {
-        // Destroy the session
+        
         session()->destroy();
 
-        // Redirect to the login page
+        
         return redirect()->to('/restaurant/login')->with('success', 'You have been logged out successfully.');
     }
     public function updateStatus()
 {
-    // Ensure the user is logged in
+    
     if (!session()->has('restaurant_id')) {
         return redirect()->to('/restaurant/login')->with('error', 'Please log in first.');
     }
 
-    // Get the logged-in restaurant's ID
+    
     $restaurantId = session()->get('restaurant_id');
 
-    // Get the status from the POST request
+    
     $status = $this->request->getPost('status');
 
-    // Validate the status input
+    
     if (!in_array($status, ['0', '1'], true)) {
         return redirect()->back()->with('error', 'Invalid status value.');
     }
 
-    // Load the RestaurantModel
+    
     $restaurantModel = new \App\Models\RestaurantModel();
 
-    // Update the status in the database
+    
     $updateData = ['status' => $status];
     if ($restaurantModel->update($restaurantId, $updateData)) {
         return redirect()->to('/restaurant/dashboard')->with('success', 'Status updated successfully.');

@@ -31,11 +31,11 @@ class FavoritesModel extends Model
         ])->first();
 
         if ($existing) {
-            // Remove from favorites
+           
             $this->delete($existing['id']);
             return ['status' => 'removed'];
         } else {
-            // Add to favorites
+            
             $this->insert([
                 'customer_id' => $customerId,
                 'restaurant_id' => $restaurantId
