@@ -422,6 +422,7 @@
         <div class="range-slider">        
             <input type="range" min="1" max="20" value="1" class="range-slider__range" id="range-slider">
             <span class="range-slider__value" id="range-value">1 km</span>
+<<<<<<< HEAD
         </div> 
 <script>
 const rangeSlider = document.getElementById('range-slider');
@@ -440,6 +441,9 @@ distanceValue.textContent = savedValue + ' km';
 }
 };
 </script>
+=======
+        </div>
+>>>>>>> 7f462f7ce2c2e9889bed352f8a38a96af118c3a3
 
         <h3>All Restaurants</h3>
         <div class="restaurant-list" id="restaurant-list">
