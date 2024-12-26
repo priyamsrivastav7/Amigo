@@ -25,28 +25,32 @@ class CustomerController extends Controller
     }
 
     public function dashboard()
-    {
-        
-        $jwt  = $this ->session->get('token');
-        $data  = $jwt ? validate_jwt($jwt) : null;
-        $customer_id = $this ->session->get('customer_id');
-        
-        if (!$data || !isset($data->data->id) || !$customer_id || $data->data->id != $customer_id) {
+{
+    // Retrieve JWT token and validate
+    $jwt = $this->session->get('token');
+    $data = $jwt ? validate_jwt($jwt) : null;
+
+    // Get the customer ID from the session
+    $customer_id = $this->session->get('customer_id');
+
+    // Validate customer session and JWT data
+    if (!$customer_id ) {
         return redirect()->to('customer/login')->with('error', 'Please login to access the dashboard.');
-        }
-
-
-        $restaurantModel = new RestaurantModel();
-        $restaurants = $restaurantModel->findAll();
-        $favorites = $this->favoriteModel->getFavoritesByCustomer($customer_id);
-        $favoriteIds = array_column($favorites, 'id');   
-
-        return view('customer/dashboard', [
-            'restaurants' => $restaurants,
-            'favoriteIds' => $favoriteIds,
-            'favorites' => $favorites
-        ]);
     }
+    $restaurantModel = new RestaurantModel();
+    $restaurants = $restaurantModel->findAll();
+
+    $favorites = $this->favoriteModel->getFavoritesByCustomer($customer_id);
+    $favoriteIds = array_column($favorites, 'id');
+
+    // Return the dashboard view with all necessary data
+    return view('customer/dashboard', [
+        'restaurants' => $restaurants,
+        'favoriteIds' => $favoriteIds,
+        'favorites' => $favorites,
+    ]);
+}
+
     
 
     public function toggleFavorite($restaurantId = null)
@@ -225,4 +229,59 @@ private function generateFavoritesHtml($favorites)
             'menuItems' => $menuItems,
         ]);
     }
+    public function editProfile()
+    {
+        $session = session();
+        $customerId = $session->get('customer_id'); // Assuming customer_id is stored in the session
+
+        if (!$customerId) {
+            return redirect()->to('/login'); // Redirect to login if not logged in
+        }
+
+        $model = new CustomerModel();
+        $customer = $model->find($customerId);
+
+        return view('customer/edit_profile', ['customer' => $customer]);
+    }
+
+    public function updateProfile()
+    {
+        $session = session();
+        $customerId = $session->get('customer_id');
+
+        if (!$customerId) {
+            return redirect()->to('/login');
+        }
+
+        $model = new CustomerModel();
+        $data = $this->request->getPost();
+
+        // Validate input
+        $validation = \Config\Services::validation();
+        $validation->setRules([
+            'name' => 'required',
+            'email' => 'required|valid_email',
+            'phone_number' => 'required|min_length[10]|max_length[15]',
+            'password' => 'permit_empty|min_length[6]',
+        ]);
+
+        if (!$validation->withRequest($this->request)->run()) {
+            return redirect()->back()->with('errors', $validation->getErrors())->withInput();
+        }
+
+        // Hash password only if it's being updated
+        if (!empty($data['password'])) {
+            $data['password'] = md5($data['password']);
+        } else {
+            unset($data['password']);
+        }
+
+        $model->update($customerId, $data);
+
+        $session->setFlashdata('success', 'Profile updated successfully!');
+        return redirect()->to('/customer/editprofile');
+    }
+    
+
+
 }

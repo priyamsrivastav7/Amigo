@@ -268,145 +268,291 @@
             content: "";
         }
         .heart-button {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    color: #ccc;
-    transition: transform 0.2s ease;
-    padding: 0.5rem;
-    z-index: 10;
-}
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #ccc;
+            transition: transform 0.2s ease;
+            padding: 0.5rem;
+            z-index: 10;
+        }
 
-.heart-button.favorited {
-    color: red;
-}
+        .heart-button.favorited {
+            color: red;
+        }
 
-.heart-button:hover {
-    transform: scale(1.2);
-}
+        .heart-button:hover {
+            transform: scale(1.2);
+        }
 
-.restaurant-item {
-    position: relative;
-}
+        .restaurant-item {
+            position: relative;
+        }
 
-.favorites-section {
-    margin: 2rem 0;
-}
+        .favorites-section {
+            margin: 2rem 0;
+        }
 
-.favorites-section h2 {
-    color: #ff4646;
-    margin-bottom: 1rem;
-}
+        .favorites-section h2 {
+            color: #ff4646;
+            margin-bottom: 1rem;
+        }
+        .settings-logout-container {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        position: fixed;
+        top: 2rem;
+        right: 2rem;
+        z-index: 100;
+    }
+
+    .settings-button {
+        padding: 0.8rem;
+        background: white;
+        border: 2px solid #2d3436;
+        color: #2d3436;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 50px;
+        height: 50px;
+    }
+
+    .settings-button:hover {
+        background: #2d3436;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(45, 52, 54, 0.2);
+    }
+
+    .settings-button svg {
+        width: 24px;
+        height: 24px;
+    }
+
+    @media (max-width: 768px) {
+        .settings-logout-container {
+            position: static;
+            margin-top: 2rem;
+            justify-content: center;
+        }
+    }
+    .settings-button {
+        position: relative;
+    }
+
+    .settings-dropdown {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        width: 250px;
+        margin-top: 10px;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.3s ease;
+        z-index: 100;
+        border: 1px solid #e0e0e0;
+    }
+
+    .settings-button.active .settings-dropdown {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .settings-dropdown-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        text-decoration: none;
+        color: #2d3436;
+        transition: all 0.3s ease;
+        border-bottom: 1px solid #f1f2f6;
+    }
+
+    .settings-dropdown-item:last-child {
+        border-bottom: none;
+    }
+
+    .settings-dropdown-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    .settings-dropdown-item svg {
+        width: 24px;
+        height: 24px;
+        margin-right: 1rem;
+        color: #ff6b6b;
+    }
+
+    /* Overlay to close dropdown when clicking outside */
+    .settings-dropdown-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 50;
+        display: none;
+    }
+
+    .settings-button.active + .settings-dropdown-overlay {
+        display: block;
+    }
+    
     </style>
 </head>
-<body>
-    <div class="dashboard-container">
+<div class="dashboard-container">
         <h2>Welcome, <?= session()->get('customer_name'); ?>!</h2>
         <h3>Explore Our Partner Restaurants</h3>
 
-        <div class="range-slider">
+        <!-- Range Slider -->
+        <div class="range-slider">        
             <input type="range" min="1" max="20" value="1" class="range-slider__range" id="range-slider">
             <span class="range-slider__value" id="range-value">1 km</span>
-        </div>
-        
-        <?php if (!empty($favorites)): ?>
-            <h3>Your Favorites</h3>
-            <div class="restaurant-list">
-                <?php foreach ($favorites as $restaurant): ?>
-                    <div class="restaurant-item">
-                        <img src="<?= base_url('/' . $restaurant['image']); ?>" alt="<?= $restaurant['name']; ?>" class="restaurant-image">
-                        <h4><?= $restaurant['name']; ?></h4>
-                        <p><strong>Email:</strong> <?= $restaurant['email']; ?></p>
-                        <p><strong>Phone:</strong> <?= $restaurant['phone_number']; ?></p>
-                        <p><strong>Address:</strong> <?= $restaurant['address']; ?></p>
-                        <a href="/customer/menu/<?= $restaurant['id']; ?>" class="view-menu-button">View Menu</a>
-                        <button type="button" class="heart-button favorited" data-id="<?= $restaurant['id']; ?>">♥</button>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
-        </div> -->
+        </div> 
+<script>
+const rangeSlider = document.getElementById('range-slider');
+const distanceValue = document.getElementById('range-value');
 
+rangeSlider.addEventListener('input', function() {
+localStorage.setItem('sliderValue', rangeSlider.value);
+distanceValue.textContent = rangeSlider.value + ' km';
+});
 
+window.onload = function() {
+const savedValue = localStorage.getItem('sliderValue');
+if (savedValue !== null) {
+rangeSlider.value = savedValue;
+distanceValue.textContent = savedValue + ' km';
+}
+};
+</script>
 
         <h3>All Restaurants</h3>
-        
-
         <div class="restaurant-list" id="restaurant-list">
-        <?php foreach($restaurants as $restaurant): ?>
-            <div class="restaurant-item" 
-                data-latitude="<?= $restaurant['latitude']; ?>" 
-                data-longitude="<?= $restaurant['longitude']; ?>" 
-                data-id="<?= $restaurant['id']; ?>">
-                <img src="<?= base_url('/' . $restaurant['image']); ?>" alt="<?= $restaurant['name']; ?>" class="restaurant-image">
-                <h4><?= $restaurant['name']; ?></h4>
-                <p><strong>Email:</strong> <?= $restaurant['email']; ?></p>
-                <p><strong>Phone:</strong> <?= $restaurant['phone_number']; ?></p>
-                <p><strong>Address:</strong> <?= $restaurant['address']; ?></p>
-                <p><strong>Status:</strong> <?= $restaurant['status'] ? 'Open' : 'Closed'; ?></p>
-                
-                <?php if ($restaurant ['status'] == 1): ?>
-                <a href="/customer/menu/<?= $restaurant['id']; ?>" class="view-menu-button">View Menu</a>
-                <?php else: ?>
-                    <button class="view-menu-button" disabled>Restaurant is currently closed</button>
-                <?php endif; ?>
+            <?php foreach($restaurants as $restaurant): ?>
+                <div class="restaurant-item" 
+                    data-latitude="<?= $restaurant['latitude']; ?>" 
+                    data-longitude="<?= $restaurant['longitude']; ?>" 
+                    data-id="<?= $restaurant['id']; ?>">
+                    <img src="<?= base_url('/' . $restaurant['image']); ?>" alt="<?= $restaurant['name']; ?>" class="restaurant-image">
+                    <h4><?= $restaurant['name']; ?></h4>
+                    <p><strong>Email:</strong> <?= $restaurant['email']; ?></p>
+                    <p><strong>Phone:</strong> <?= $restaurant['phone_number']; ?></p>
+                    <p><strong>Address:</strong> <?= $restaurant['address']; ?></p>
+                    <p><strong>Status:</strong> <?= $restaurant['status'] ? 'Open' : 'Closed'; ?></p>
+                    
+                    <?php if ($restaurant['status'] == 1): ?>
+                        <a href="/customer/menu/<?= $restaurant['id']; ?>" class="view-menu-button">View Menu</a>
+                    <?php else: ?>
+                        <button class="view-menu-button" disabled>Restaurant is currently closed</button>
+                    <?php endif; ?>
 
-                <button class="heart-button <?= in_array($restaurant['id'], $favoriteIds) ? 'favorited' : '' ?>" 
-    data-id="<?= $restaurant['id'] ?>">
-    ♥
-</button>
+                    <button class="heart-button <?= in_array($restaurant['id'], $favoriteIds) ? 'favorited' : '' ?>" 
+                        data-id="<?= $restaurant['id'] ?>">♥</button>
+                </div>
+            <?php endforeach; ?>
+        </div>
 
+        <!-- Settings and Logout -->
+        <div class="settings-logout-container">
+            <div class="settings-button" id="settingsButton">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+
+                <div class="settings-dropdown">
+                    <a href="/customer/editprofile" class="settings-dropdown-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        Profile Settings
+                    </a>
+                    
+                    <a href="/customer/distance-preferences" class="settings-dropdown-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Distance Preferences
+                    </a>
+                </div>
             </div>
-        <?php endforeach; ?>
-    </div>
 
-        
-    <div class="logout-container">
             <form action="/customer/logout" method="get">
                 <button type="submit" class="logout-button">Logout</button>
             </form>
-     </div>
-    
+        </div>
+        <div class="settings-dropdown-overlay" id="settingsDropdownOverlay"></div>
+    </div>
 
-     <script>
-    document.addEventListener('DOMContentLoaded', () => {
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
     const rangeSlider = document.getElementById('range-slider');
     const rangeValue = document.getElementById('range-value');
     let customerLatitude, customerLongitude;
-    navigator.geolocation.getCurrentPosition(
-        (position) => {
-            customerLatitude = position.coords.latitude;
-            customerLongitude = position.coords.longitude;
-            console.log(customerLatitude);
-            console.log(customerLongitude);
 
+    // Get user location
+    function getUserLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    customerLatitude = position.coords.latitude;
+                    customerLongitude = position.coords.longitude;
 
-            
-            updateRestaurantList(customerLatitude, customerLongitude, rangeSlider.value);
+                    console.log("Customer Latitude:", customerLatitude);
+                    console.log("Customer Longitude:", customerLongitude);
 
-            
-            rangeSlider.addEventListener('input', () => {
-                const range = rangeSlider.value;
-                rangeValue.textContent = `${range} km`;
-                updateRestaurantList(customerLatitude, customerLongitude, range);
-            });
-        },
-        (error) => {
-            console.error('Error getting customer location:', error);
+                    localStorage.setItem("userLatitude", customerLatitude);
+                    localStorage.setItem("userLongitude", customerLongitude);
+
+                    updateRestaurantList(customerLatitude, customerLongitude, rangeSlider.value);
+                    filterRestaurantsByLocation(rangeSlider.value);
+
+                    rangeSlider.addEventListener('input', () => {
+                        const range = rangeSlider.value;
+                        rangeValue.textContent = `${range} km`;
+                        updateRestaurantList(customerLatitude, customerLongitude, range);
+                        filterRestaurantsByLocation(range);
+                    });
+                },
+                (error) => {
+                    console.error('Error getting customer location:', error.message);
+                }
+            );
+        } else {
+            console.warn('Geolocation is not supported by this browser.');
         }
-    );
+    }
 
+    // Update restaurant list by range
     function updateRestaurantList(customerLatitude, customerLongitude, range) {
         const restaurantItems = document.querySelectorAll('.restaurant-item');
         restaurantItems.forEach((item) => {
             const restaurantLatitude = parseFloat(item.dataset.latitude);
             const restaurantLongitude = parseFloat(item.dataset.longitude);
             const distance = calculateDistance(customerLatitude, customerLongitude, restaurantLatitude, restaurantLongitude);
-            
+
             if (distance <= range) {
                 item.style.display = 'block';
             } else {
@@ -415,8 +561,36 @@
         });
     }
 
+    // Filter restaurants by range
+    function filterRestaurantsByLocation(rangeValue) {
+        const userLatitude = customerLatitude;
+        const userLongitude = customerLongitude;
+
+        if (userLatitude && userLongitude) {
+            document.querySelectorAll('.restaurant-card').forEach((card) => {
+                const lat = parseFloat(card.getAttribute('data-lat'));
+                const lng = parseFloat(card.getAttribute('data-lng'));
+                const distance = calculateDistance(userLatitude, userLongitude, lat, lng);
+
+                if (distance <= rangeValue) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+
+                const distanceElement = card.querySelector('.restaurant-distance');
+                if (distanceElement) {
+                    distanceElement.innerText = `${distance.toFixed(2)} km`;
+                }
+            });
+        } else {
+            console.warn('User location is not available.');
+        }
+    }
+
+    // Calculate distance between two coordinates
     function calculateDistance(lat1, lon1, lat2, lon2) {
-        const R = 6371; 
+        const R = 6371; // Earth's radius in km
         const dLat = ((lat2 - lat1) * Math.PI) / 180;
         const dLon = ((lon2 - lon1) * Math.PI) / 180;
         const a =
@@ -426,10 +600,10 @@
             Math.sin(dLon / 2) *
             Math.sin(dLon / 2);
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c; 
+        return R * c;
     }
 
-    
+    // Favorite Handler
     function favoriteHandler(event) {
         event.preventDefault();
 
@@ -441,7 +615,6 @@
 
     async function toggleFavorite(button, restaurantId) {
         try {
-            
             button.disabled = true;
 
             const response = await fetch('/customer/toggleFavorite', {
@@ -454,7 +627,6 @@
                 credentials: 'same-origin'
             });
 
-            
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
@@ -469,7 +641,6 @@
                 alert(data.message || 'An error occurred');
             }
 
-            
             if (data.favorites_html) {
                 const favoritesContainer = document.getElementById('favorites-container');
                 if (favoritesContainer) {
@@ -481,23 +652,37 @@
             console.error('Error toggling favorite:', error);
             alert('Could not update favorites. Please try again.');
         } finally {
-            
             button.disabled = false;
         }
     }
 
     function attachFavoriteListeners() {
         document.querySelectorAll('.heart-button').forEach(button => {
-            
             button.removeEventListener('click', favoriteHandler);
             button.addEventListener('click', favoriteHandler);
         });
     }
 
-    
     attachFavoriteListeners();
+
+    // Settings Dropdown
+    const settingsButton = document.getElementById('settingsButton');
+    const settingsDropdownOverlay = document.getElementById('settingsDropdownOverlay');
+
+    settingsButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        settingsButton.classList.toggle('active');
+    });
+
+    settingsDropdownOverlay.addEventListener('click', () => {
+        settingsButton.classList.remove('active');
+    });
+
+    // Get User Location on Load
+    getUserLocation();
 });
 </script>
+
 
 </body>
 </html>

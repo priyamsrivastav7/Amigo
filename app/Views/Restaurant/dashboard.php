@@ -23,16 +23,12 @@
             padding: 20px;
         }
 
-        h2, h3 {
-            color: #444;
-        }
-
         h2 {
             text-align: center;
         }
 
-        form {
-            margin-bottom: 20px;
+        h3 {
+            color: #444;
         }
 
         label {
@@ -41,19 +37,12 @@
             margin-bottom: 5px;
         }
 
-        input[type="text"], input[type="number"], select {
+        select {
             width: 100%;
             padding: 10px;
             margin-bottom: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            font-size: 14px;
-        }
-
-        input[type="file"] {
-            border: none;
-            font-size: 14px;
-            margin-bottom: 10px;
         }
 
         button {
@@ -69,167 +58,58 @@
             background-color: #45a049;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-
-        table th, table td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: center;
-        }
-
-        table th {
-            background-color: #f4f4f4;
-            color: #333;
-        }
-
-        .menu-item-image {
-            border-radius: 5px;
-            object-fit: cover;
-        }
-
-        form.inline-form {
-            display: inline-block;
-        }
-
-        .status-enabled {
-            color: green;
-            font-weight: bold;
-        }
-
-        .status-disabled {
-            color: red;
-            font-weight: bold;
-        }
-
-        
         @media screen and (max-width: 768px) {
             .dashboard-container {
                 width: 95%;
                 padding: 10px;
             }
-
-            table {
-                font-size: 14px;
-            }
         }
     </style>
+
 </head>
 <body>
     <div class="dashboard-container">
-        
         <div style="text-align: right; margin-bottom: 20px;">
+            <form action="<?= base_url('/restaurant/mainmenu'); ?>" method="get" style="display: inline;">
+                <button type="submit">Menu</button>
+            </form>
             <form action="<?= base_url('/restaurant/logout'); ?>" method="get" style="display: inline;">
-                <button type="submit" style="background-color: red; color: white; padding: 10px 15px; border: none; cursor: pointer;">Log Out</button>
+                <button type="submit" style="background-color: red;">Log Out</button>
             </form>
         </div>
+
         <h2>Welcome, <?= session()->get('restaurant_name'); ?>!</h2>
 
         <h3>Restaurant Status</h3>
-        <form action="<?= base_url('/restaurant/updateStatus') ?>" method="post">
+        <form>
             <label for="status">Status:</label>
-            <select name="status" id="status">
+            <select name="status" id="status" onchange="updateStatus(this.value)">
                 <option value="1" <?= $restaurant['status'] == 1 ? 'selected' : ''; ?>>Open</option>
                 <option value="0" <?= $restaurant['status'] == 0 ? 'selected' : ''; ?>>Closed</option>
             </select>
-            <button type="submit">Update Status</button>
-        </form>
-
-
-        <h3>Add New Menu Item</h3>
-        <form action="<?= base_url('/restaurant/addMenuItem') ?>" method="post" enctype="multipart/form-data">
-   
-    <label for="type">Select Type</label>
-    <select name="type" id="type" required>
-        <option value="" disabled selected>Select Type</option>
-        <option value="Beverages">Beverages</option>
-        <option value="Starter">Starter</option>
-        <option value="Main Course">Main Course</option>
-        <option value="Dessert">Dessert</option>
-    </select>
-
-    
-    <label for="name">Menu Item Name</label>
-    <input type="text" name="name" id="name" required>
-
-    
-    <label for="price">Price</label>
-    <input type="number" name="price" id="price" step="0.01" required>
-
-    
-    <label for="quantity_limit">Quantity Limit</label>
-    <input type="number" name="quantity_limit" id="quantity_limit" required>
-
-    
-    <label for="photo">Upload Photo</label>
-    <input type="file" name="photo" id="photo" accept="image/*">
-
-    
-    <button type="submit">Add Menu Item</button>
-</form>
-
-
-
-
-        <h3>Your Menu Items</h3>
-<?php if (!empty($menu_items)): ?>
-    <table>
-        <thead>
-            <tr>
-                <th>Image</th>
-                <th>Type</th>
-                <th>Name</th>
-                <th>Price</th>
-                <th>Quantity Limit</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($menu_items as $item): ?>
-                <tr>
-                    <td>
-                        <img src="<?= base_url('/' . $item['photo']); ?>" alt="<?= $item['name']; ?>" class="menu-item-image" style="width: 100px; height: 100px;">
-                    </td>
-                    <td><?= esc($item['type']); ?></td>
-                    <td><?= esc($item['name']); ?></td>
-                    <td><?= esc($item['price']); ?></td>
-                    <td>
-                        <form action="<?= base_url('/restaurant/updateQuantity/' . $item['id']); ?>" method="post" style="display: inline;">
-                            <input type="number" name="quantity_limit" value="<?= esc($item['quantity_limit']); ?>" min="1" required style="width: 60px;">
-                            <button type="submit">Update</button>
-                        </form>
-                    </td>
-                    <td>
-                        <?php if ($item['status'] === 'enabled'): ?>
-                            <span style="color: green;">Enabled</span>
-                        <?php else: ?>
-                            <span style="color: red;">Disabled</span>
-                        <?php endif; ?>
-                    </td>
-                    <td>
-                        <form action="<?= base_url('/restaurant/deleteMenuItem/' . $item['id']); ?>" method="post" style="display: inline;">
-                            <button type="submit" onclick="return confirm('Are you sure you want to delete this item?')">Delete</button>
-                        </form>
-                        <form action="<?= base_url('/restaurant/toggleStatus/' . $item['id']); ?>" method="post" style="display: inline;">
-                            <?php if ($item['status'] === 'enabled'): ?>
-                                <button type="submit">Disable</button>
-                            <?php else: ?>
-                                <button type="submit">Enable</button>
-                            <?php endif; ?>
-                        </form>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
-<?php else: ?>
-    <p>No menu items found.</p>
-<?php endif; ?>
-
+        </form>     
     </div>
+
+    <script>
+        function updateStatus(status) {
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", "<?= base_url('/restaurant/updateStatus') ?>", true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+            <?php if (csrf_token()): ?>
+            xhr.setRequestHeader("X-CSRF-TOKEN", "<?= csrf_hash(); ?>");
+            <?php endif; ?>
+
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    alert("Status updated successfully!");
+                } else {
+                    alert("Failed to update status. Please try again.");
+                }
+            };
+
+            xhr.send("status=" + status);
+        }
+    </script>
 </body>
 </html>

@@ -17,6 +17,8 @@ $routes->get('/customer/logout', 'CustomerController::logout');
 $routes->get('/customer/dashboard', 'CustomerController::dashboard');
 
 $routes->get('/customer/menu/(:segment)', 'CustomerController::menu/$1');
+$routes->post('customer/store-location', 'CustomerController::storeLocation');
+
 
 
 
@@ -34,6 +36,9 @@ $routes->post('restaurant/deleteMenuItem/(:num)', 'RestaurantDashboard::deleteMe
 $routes->post('/restaurant/toggleStatus/(:num)', 'RestaurantDashboard::toggleStatus/$1');
 //closed or open
 $routes->post('/restaurant/updateStatus', 'RestaurantController::updateStatus');
+$routes->get('/restaurant/mainmenu', 'RestaurantDashboard::mainmenu');
+
+
 
 
 
@@ -42,7 +47,26 @@ $routes->post('customer/toggleFavorite', 'CustomerController::toggleFavorite');
 //for cart 
 $routes->get('customer/checkout', 'CheckoutController::index');
 $routes->post('customer/checkout', 'CheckoutController::checkout');
+$routes->post('/apply-coupon', 'CheckoutController::applyCoupon');
+$routes->get('/reset-discount', 'CheckoutController::resetDiscount');
+
+
+$routes->get('/customer/editprofile', 'CustomerController::editProfile'); 
+$routes->post('/customer/updateprofile', 'CustomerController::updateProfile');
+
+
+
+
 
 //for payment
 
 $routes->post('initiate-payment', 'CheckoutController::initiatePayment');
+
+
+//for admin 
+
+$routes->get('/admin/dashboard', 'AdminController::dashboard');
+$routes->get('/admin/approve/(:num)', 'AdminController::approve/$1');
+$routes->get('/admin/disapprove/(:num)', 'AdminController::disapprove/$1');
+$routes->get('/admin/view/(:num)', 'AdminController::view/$1');
+

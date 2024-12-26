@@ -11,7 +11,9 @@ class RestaurantController extends Controller
     
     public function login()
     {
-        
+        if (session()->get('restaurant_id')) {
+            return redirect()->to('/restaurant/dashboard');
+        }
         return view('restaurant/login');
     }
 
@@ -54,6 +56,10 @@ class RestaurantController extends Controller
         
         session()->set('restaurant_id', $restaurant['id']);
         session()->set('restaurant_name', $restaurant['name']);
+        // $a = session()->get('restaurant_id');
+        // var_dump($a);
+        // exit;
+
 
         return redirect()->to('/restaurant/dashboard'); 
     } else {
@@ -139,8 +145,7 @@ class RestaurantController extends Controller
     }
 }
 public function RestaurantMenu($restaurantId)
-{
-    
+{    
     $restaurantModel = new RestaurantModel();
     $menuModel = new MenuModel();
 
@@ -166,37 +171,33 @@ public function logout()
         
         return redirect()->to('/restaurant/login')->with('success', 'You have been logged out successfully.');
     }
+
     public function updateStatus()
+    {
+        $status = $this->request->getPost('status');
+        $restaurantId = session()->get('restaurant_id');
+        //  var_dump($status);
+        //  die;
+        //  var_dump($restaurantId);
+        //  die;
+        $restaurantModel = new RestaurantModel;
+
+        if ($restaurantModel->update($restaurantId, ['status' => $status]));
+
+        
+        {
+            return $this->response->setJSON(['success' => true]);
+        }
+
+        return $this->response->setJSON(['success' => false]);
+    }
+
+public function viewMenu()
 {
-    
-    if (!session()->has('restaurant_id')) {
-        return redirect()->to('/restaurant/login')->with('error', 'Please log in first.');
-    }
-
-    
-    $restaurantId = session()->get('restaurant_id');
-
-    
-    $status = $this->request->getPost('status');
-
-    
-    if (!in_array($status, ['0', '1'], true)) {
-        return redirect()->back()->with('error', 'Invalid status value.');
-    }
-
-    
-    $restaurantModel = new \App\Models\RestaurantModel();
-
-    
-    $updateData = ['status' => $status];
-    if ($restaurantModel->update($restaurantId, $updateData)) {
-        return redirect()->to('/restaurant/dashboard')->with('success', 'Status updated successfully.');
-    } else {
-        return redirect()->back()->with('error', 'Failed to update status. Please try again.');
-    }
+    $menuModel = new \App\Models\MenuModel(); // Adjust to your actual model path and name
+    $data['menu_items'] = $menuModel->findAll(); // Fetch all menu items
+    return view('restaurant/menu', $data); // Load the menu page view with data
 }
-
-
 
 }
 

@@ -6,7 +6,7 @@
     <title>Checkout</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <style>
-        /* General Reset */
+        
         * {
             margin: 0;
             padding: 0;
@@ -179,19 +179,19 @@
 
     <div class="checkout-container">
     <div class="back-button-container">
-            <button onclick="window.history.back()" class="back-button">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-                Back
-            </button>
-        </div>
+    <button onclick="clearDiscountAndGoBack()" class="back-button">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        Back
+    </button>
+    </div>
         <h2>Checkout</h2>
         <div class="checkout-items">
             <?php if ($cartData): ?>
                 <?php foreach ($cartData as $itemId => $item): ?>
                     <div class="checkout-item">
-                        <img src="<?= esc($item['photo']) ?>" alt="<?= esc($item['name']) ?>" class="checkout-item-image">
+                    <img src="<?= esc($item['photos'][0]) ?>" alt="<?= esc($item['name']) ?>" class="checkout-item-image">
                         <div class="checkout-item-info">
                             <h3><?= esc($item['name']) ?></h3>
                             <p>Quantity: <?= esc($item['quantity']) ?></p>
@@ -203,26 +203,48 @@
                 <p>No items in your cart.</p>
             <?php endif; ?>
         </div>
+        <form method="post" action="<?= base_url('/apply-coupon'); ?>">
+    <label for="coupon">Have a coupon?</label>
+    <input type="text" name="coupon" id="coupon" placeholder="Enter Coupon Code">
+    <button type="submit" class="btn btn-secondary">Apply</button>
+</form>
 
-        <!-- In your view file (checkout.php or similar) -->
-        <div class="checkout-summary">
-    <p>Total: Rs. 
-        <?php 
-        $total = 0;
-        foreach ($cartData as $item) {
-            $total += $item['price'] * $item['quantity'];
-        }
-        echo number_format($total, 2);
-        ?>
-    </p>
+<div class="checkout-summary mt-4">
+    
 
-    <!-- Create a form that will submit to the payment initiation method -->
+    <div class="mt-3">
+        <p><strong>Subtotal:</strong> Rs. <?= number_format($subtotal, 2) ?></p>
+
+        <?php if (!empty($discount)): ?>         
+            
+        <p><strong>Discount:</strong> -Rs. <?= number_format($discount, 2) ?></p>
+        <?php endif; ?>
+        
+
+        <p><strong>Total:</strong> Rs. <?= number_format($subtotal - ($discount ?? 0), 2) ?></p>
+    </div>
+
     <form action="<?= site_url('initiate-payment') ?>" method="post">
-        <input type="hidden" name="total" value="<?= number_format($total, 2) ?>">
+        <input type="hidden" name="total" value="<?= number_format($subtotal - ($discount ?? 0), 2) ?>">
         <button type="submit" class="btn btn-primary">Proceed to Payment</button>
     </form>
 </div>
-    </div>
+<script>
+    function clearDiscountAndGoBack() {
+        fetch('<?= site_url('/reset-discount') ?>', { method: 'GET' })
+    .then(response => {
+        if (response.ok) {
+            console.log('Discount cleared');
+            window.history.back();
+        } else {
+            console.error('Failed to clear discount');
+        }
+    })
+    .catch(error => console.error('Error:', error));
+
+    }
+</script>
+
 
 </body>
 </html>
