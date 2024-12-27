@@ -419,57 +419,55 @@
         <h3>Explore Our Partner Restaurants</h3>
 
         <!-- Range Slider -->
-        <div class="range-slider">        
-            <input type="range" min="1" max="20" value="1" class="range-slider__range" id="range-slider">
-            <span class="range-slider__value" id="range-value">1 km</span>
-<<<<<<< HEAD
-        </div> 
+        <div class="range-slider">
+    <input type="range" min="1" max="20" value="1" class="range-slider__range" id="range-slider">
+    <span class="range-slider__value" id="range-value">1 km</span>
+</div> 
+
 <script>
 const rangeSlider = document.getElementById('range-slider');
 const distanceValue = document.getElementById('range-value');
 
 rangeSlider.addEventListener('input', function() {
-localStorage.setItem('sliderValue', rangeSlider.value);
-distanceValue.textContent = rangeSlider.value + ' km';
+    localStorage.setItem('sliderValue', rangeSlider.value);
+    distanceValue.textContent = rangeSlider.value + ' km';
 });
 
 window.onload = function() {
-const savedValue = localStorage.getItem('sliderValue');
-if (savedValue !== null) {
-rangeSlider.value = savedValue;
-distanceValue.textContent = savedValue + ' km';
-}
+    const savedValue = localStorage.getItem('sliderValue');
+    if (savedValue !== null) {
+        rangeSlider.value = savedValue;
+        distanceValue.textContent = savedValue + ' km';
+    }
 };
 </script>
-=======
-        </div>
->>>>>>> 7f462f7ce2c2e9889bed352f8a38a96af118c3a3
 
-        <h3>All Restaurants</h3>
-        <div class="restaurant-list" id="restaurant-list">
-            <?php foreach($restaurants as $restaurant): ?>
-                <div class="restaurant-item" 
-                    data-latitude="<?= $restaurant['latitude']; ?>" 
-                    data-longitude="<?= $restaurant['longitude']; ?>" 
-                    data-id="<?= $restaurant['id']; ?>">
-                    <img src="<?= base_url('/' . $restaurant['image']); ?>" alt="<?= $restaurant['name']; ?>" class="restaurant-image">
-                    <h4><?= $restaurant['name']; ?></h4>
-                    <p><strong>Email:</strong> <?= $restaurant['email']; ?></p>
-                    <p><strong>Phone:</strong> <?= $restaurant['phone_number']; ?></p>
-                    <p><strong>Address:</strong> <?= $restaurant['address']; ?></p>
-                    <p><strong>Status:</strong> <?= $restaurant['status'] ? 'Open' : 'Closed'; ?></p>
-                    
-                    <?php if ($restaurant['status'] == 1): ?>
-                        <a href="/customer/menu/<?= $restaurant['id']; ?>" class="view-menu-button">View Menu</a>
-                    <?php else: ?>
-                        <button class="view-menu-button" disabled>Restaurant is currently closed</button>
-                    <?php endif; ?>
+<h3>All Restaurants</h3>
+<div class="restaurant-list" id="restaurant-list">
+    <?php foreach($restaurants as $restaurant): ?>
+        <div class="restaurant-item" 
+            data-latitude="<?= $restaurant['latitude']; ?>" 
+            data-longitude="<?= $restaurant['longitude']; ?>" 
+            data-id="<?= $restaurant['id']; ?>">
+            <img src="<?= base_url('/' . $restaurant['image']); ?>" alt="<?= $restaurant['name']; ?>" class="restaurant-image">
+            <h4><?= $restaurant['name']; ?></h4>
+            <p><strong>Email:</strong> <?= $restaurant['email']; ?></p>
+            <p><strong>Phone:</strong> <?= $restaurant['phone_number']; ?></p>
+            <p><strong>Address:</strong> <?= $restaurant['address']; ?></p>
+            <p><strong>Status:</strong> <?= $restaurant['status'] ? 'Open' : 'Closed'; ?></p>
+            
+            <?php if ($restaurant['status'] == 1): ?>
+                <a href="/customer/menu/<?= $restaurant['id']; ?>" class="view-menu-button">View Menu</a>
+            <?php else: ?>
+                <button class="view-menu-button" disabled>Restaurant is currently closed</button>
+            <?php endif; ?>
 
-                    <button class="heart-button <?= in_array($restaurant['id'], $favoriteIds) ? 'favorited' : '' ?>" 
-                        data-id="<?= $restaurant['id'] ?>">♥</button>
-                </div>
-            <?php endforeach; ?>
+            <button class="heart-button <?= in_array($restaurant['id'], $favoriteIds) ? 'favorited' : '' ?>" 
+                data-id="<?= $restaurant['id'] ?>">♥</button>
         </div>
+    <?php endforeach; ?>
+</div>
+
 
         <!-- Settings and Logout -->
         <div class="settings-logout-container">

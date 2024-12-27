@@ -244,7 +244,7 @@
         <label for="password">Password</label>
         <input type="password" name="password" id="password" placeholder="Enter your password" required>
     </div>
-    <div class="g-recaptcha" data-sitekey="6LfIOokqAAAAAEQU9huijCZGbZdmzjnbluezRZb_"></div>
+    <div class="g-recaptcha" data-sitekey="6LfBAqcqAAAAAOKadKiHZjNhf8qHqj5DgT2pIgIA"></div>
     <button type="submit">Sign In</button>
 </form>
 

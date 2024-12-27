@@ -119,7 +119,7 @@ private function generateFavoritesHtml($favorites)
 {
     
     $recaptchaResponse = $this->request->getPost('g-recaptcha-response');
-    $secretKey = '6LfIOokqAAAAAH5laKejKAv9kO_QjzK2N1JIXW7N'; // Replace with your secret key
+    $secretKey = '6LfBAqcqAAAAAEoxjKdYtvYjmGx9xCuWvQ3O5WG2'; // Replace with your secret key
     $verifyResponse = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret={$secretKey}&response={$recaptchaResponse}");
     $responseData = json_decode($verifyResponse);
 
