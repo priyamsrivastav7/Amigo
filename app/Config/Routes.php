@@ -18,6 +18,8 @@ $routes->get('/customer/dashboard', 'CustomerController::dashboard');
 
 $routes->get('/customer/menu/(:segment)', 'CustomerController::menu/$1');
 $routes->post('customer/store-location', 'CustomerController::storeLocation');
+$routes->get('/search', 'RestaurantController::search');
+
 
 
 
