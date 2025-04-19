@@ -5,9 +5,16 @@ namespace App\Controllers;
 use App\Models\RestaurantModel;
 use App\Models\MenuModel;
 use CodeIgniter\Controller;
+use App\Models\FavoritesModel;
 
 class RestaurantController extends Controller
 {
+    public function __construct()
+    {       
+        
+        $this->favoriteModel = new FavoritesModel();
+        
+    }
     
     public function login()
     {
@@ -198,6 +205,37 @@ public function viewMenu()
     $data['menu_items'] = $menuModel->findAll(); // Fetch all menu items
     return view('restaurant/menu', $data); // Load the menu page view with data
 }
+public function search()
+{
+    $searchTerm = trim($this->request->getVar('query')); // Get and sanitize search term
+
+    $db = \Config\Database::connect();
+
+    // Improved query to search restaurants and dishes
+    $query = $db->query("
+        SELECT DISTINCT r.*
+        FROM restaurants r
+        LEFT JOIN menu_items m ON r.id = m.restaurant_id
+        WHERE r.name LIKE ? OR m.name LIKE ?
+    ", ["%$searchTerm%", "%$searchTerm%"]); // Use query binding for safety
+
+    $customer_id = session()->get('customer_id');
+    $favorites = $this->favoriteModel->getFavoritesByCustomer($customer_id);
+    $favoriteIds = array_column($favorites, 'id');
+    $results = $query->getResultArray();
+
+    // Debugging: Check the results
+    // var_dump($results);
+    // die;
+
+    return view('customer/dashboard', [
+        'restaurants' => $results,
+        'searchTerm' => $searchTerm,
+        'favoriteIds' => $favoriteIds, 
+    ]);
+}
+
+
 
 }
 

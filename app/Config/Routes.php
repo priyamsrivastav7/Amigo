@@ -18,6 +18,8 @@ $routes->get('/customer/dashboard', 'CustomerController::dashboard');
 
 $routes->get('/customer/menu/(:segment)', 'CustomerController::menu/$1');
 $routes->post('customer/store-location', 'CustomerController::storeLocation');
+$routes->get('/search', 'RestaurantController::search');
+
 
 
 
@@ -60,7 +62,14 @@ $routes->post('/customer/updateprofile', 'CustomerController::updateProfile');
 
 //for payment
 
-$routes->post('initiate-payment', 'CheckoutController::initiatePayment');
+// $routes->post('initiate-payment', 'PayController::initiatePayment');
+$routes->post('/initiate-payment', 'PaymentController::initiatePayment');
+$routes->get('payment-response', 'PaymentController::paymentResponse');
+
+
+
+
+
 
 
 //for admin 
